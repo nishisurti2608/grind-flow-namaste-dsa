@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -8,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import HeatmapCalendar from './HeatmapCalendar';
 import HabitList from './HabitList';
 import AddHabitModal from './AddHabitModal';
+import EditHabitModal from './EditHabitModal';
 
 export interface Habit {
   id: string;
@@ -23,19 +25,29 @@ export interface HabitEntry {
   notes?: string;
 }
 
+export interface Subtask {
+  id: string;
+  habit_id: string;
+  name: string;
+  completed: boolean;
+}
+
 const Dashboard = ({ onBack }: { onBack: () => void }) => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const [habits, setHabits] = useState<Habit[]>([]);
   const [habitEntries, setHabitEntries] = useState<HabitEntry[]>([]);
+  const [subtasks, setSubtasks] = useState<Subtask[]>([]);
   const [selectedHabit, setSelectedHabit] = useState<Habit | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
       fetchHabits();
       fetchHabitEntries();
+      fetchSubtasks();
     }
   }, [user]);
 
@@ -83,6 +95,20 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
     }
   };
 
+  const fetchSubtasks = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('subtasks')
+        .select('*');
+
+      if (error) throw error;
+
+      setSubtasks(data || []);
+    } catch (error) {
+      console.error('Error fetching subtasks:', error);
+    }
+  };
+
   const addHabit = async (habitData: Omit<Habit, 'id'>) => {
     try {
       const { data, error } = await supabase
@@ -90,7 +116,7 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
         .insert([{
           name: habitData.name,
           color: habitData.color,
-          type: 'checkbox', // Default type for simplified habits
+          type: 'checkbox',
           user_id: user?.id,
         }])
         .select()
@@ -119,6 +145,145 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
     }
   };
 
+  const updateHabit = async (habitId: string, updates: Partial<Habit>) => {
+    try {
+      const { error } = await supabase
+        .from('habits')
+        .update(updates)
+        .eq('id', habitId);
+
+      if (error) throw error;
+
+      setHabits(habits.map(habit => 
+        habit.id === habitId ? { ...habit, ...updates } : habit
+      ));
+
+      if (selectedHabit?.id === habitId) {
+        setSelectedHabit({ ...selectedHabit, ...updates });
+      }
+
+      toast({
+        title: "Habit updated!",
+        description: "Your habit has been updated successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error updating habit",
+        description: "Could not update your habit. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteHabit = async (habitId: string) => {
+    try {
+      const { error } = await supabase
+        .from('habits')
+        .delete()
+        .eq('id', habitId);
+
+      if (error) throw error;
+
+      setHabits(habits.filter(habit => habit.id !== habitId));
+      
+      if (selectedHabit?.id === habitId) {
+        setSelectedHabit(habits.find(h => h.id !== habitId) || null);
+      }
+
+      toast({
+        title: "Habit deleted",
+        description: "Your habit has been deleted successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error deleting habit",
+        description: "Could not delete your habit. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const addSubtask = async (habitId: string, subtaskName: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('subtasks')
+        .insert([{
+          habit_id: habitId,
+          name: subtaskName,
+          user_id: user?.id,
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const newSubtask = {
+        id: data.id,
+        habit_id: data.habit_id,
+        name: data.name,
+        completed: data.completed,
+      };
+
+      setSubtasks([...subtasks, newSubtask]);
+
+      toast({
+        title: "Subtask added!",
+        description: "New subtask has been added.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error adding subtask",
+        description: "Could not add subtask. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const updateSubtask = async (subtaskId: string, completed: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('subtasks')
+        .update({ completed })
+        .eq('id', subtaskId);
+
+      if (error) throw error;
+
+      setSubtasks(subtasks.map(subtask =>
+        subtask.id === subtaskId ? { ...subtask, completed } : subtask
+      ));
+    } catch (error) {
+      toast({
+        title: "Error updating subtask",
+        description: "Could not update subtask. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteSubtask = async (subtaskId: string) => {
+    try {
+      const { error } = await supabase
+        .from('subtasks')
+        .delete()
+        .eq('id', subtaskId);
+
+      if (error) throw error;
+
+      setSubtasks(subtasks.filter(subtask => subtask.id !== subtaskId));
+
+      toast({
+        title: "Subtask deleted",
+        description: "Subtask has been deleted.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error deleting subtask",
+        description: "Could not delete subtask. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const updateHabitEntry = async (habitId: string, date: string, completed: boolean, notes?: string) => {
     try {
       const { data, error } = await supabase
@@ -135,7 +300,6 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
 
       if (error) throw error;
 
-      // Update local state
       setHabitEntries(prev => {
         const existing = prev.find(entry => entry.habit_id === habitId && entry.date === date);
         if (existing) {
@@ -191,8 +355,8 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
                 <Calendar className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">HabitFlow</h1>
-                <p className="text-sm text-gray-500">Track your daily habits</p>
+                <h1 className="text-xl font-bold text-gray-900">Grind Flow</h1>
+                <p className="text-sm text-gray-500">Level up your dev skills daily</p>
               </div>
             </div>
           </div>
@@ -238,8 +402,14 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
             <div className="lg:col-span-1">
               <HabitList 
                 habits={habits}
+                subtasks={subtasks}
                 selectedHabit={selectedHabit}
                 onSelectHabit={setSelectedHabit}
+                onEditHabit={setEditingHabit}
+                onDeleteHabit={deleteHabit}
+                onAddSubtask={addSubtask}
+                onUpdateSubtask={updateSubtask}
+                onDeleteSubtask={deleteSubtask}
               />
             </div>
 
@@ -277,6 +447,13 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
         open={showAddModal}
         onClose={() => setShowAddModal(false)}
         onAdd={addHabit}
+      />
+
+      <EditHabitModal
+        open={!!editingHabit}
+        habit={editingHabit}
+        onClose={() => setEditingHabit(null)}
+        onUpdate={updateHabit}
       />
     </div>
   );

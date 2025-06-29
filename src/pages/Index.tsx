@@ -1,8 +1,7 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Calendar, TrendingUp, Target, Zap, CheckCircle, BarChart3, List, ArrowRight, Star, Users, Shield } from "lucide-react";
+import { Calendar, TrendingUp, Target, Zap, CheckCircle, BarChart3, List, ArrowRight, Star, Users, Shield, Code, Database, Smartphone, Share2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Dashboard from "@/components/Dashboard";
@@ -38,16 +37,16 @@ const Index = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  HabitFlow
+                  Grind Flow
                 </h1>
-                <p className="text-sm text-gray-600">Transform your life, one habit at a time</p>
+                <p className="text-sm text-gray-600">Level up your dev skills daily</p>
               </div>
             </div>
             <Button 
               onClick={() => navigate('/auth')}
               className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
             >
-              Get Started Free
+              Start Grinding
             </Button>
           </div>
         </div>
@@ -60,13 +59,13 @@ const Index = () => {
           <div className="text-center space-y-8">
             <div className="space-y-4">
               <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight">
-                Build Better Habits,
+                Master Your Dev Journey,
                 <br />
-                Track Your Progress
+                One Habit at a Time
               </h1>
               <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                The most intuitive habit tracker designed to help you build consistency, 
-                visualize your progress, and achieve your goals with beautiful insights.
+                The ultimate habit tracker designed for developers. Track DSA practice, projects, 
+                core skills, and social media presence to accelerate your coding career.
               </p>
             </div>
             
@@ -76,7 +75,7 @@ const Index = () => {
                 size="lg"
                 className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-lg px-8 py-4 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
               >
-                Start Your Journey
+                Start Your Grind
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
               <div className="flex items-center space-x-2 text-gray-600">
@@ -85,34 +84,46 @@ const Index = () => {
                     <div key={i} className="w-8 h-8 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full border-2 border-white"></div>
                   ))}
                 </div>
-                <span className="text-sm">Join 10,000+ users building better habits</span>
+                <span className="text-sm">Join 10,000+ developers leveling up</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Core Dev Habits Section */}
       <section className="py-20 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center space-y-4 mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900">
-              Everything You Need to Succeed
+              The 4 Pillars of Dev Growth
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Powerful features designed to make habit tracking effortless and engaging
+              Master these essential areas to accelerate your development career
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             <Card className="p-8 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-blue-50 to-indigo-50">
               <div className="space-y-4">
                 <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center">
-                  <Calendar className="w-8 h-8 text-white" />
+                  <Database className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900">Visual Progress Tracking</h3>
+                <h3 className="text-xl font-bold text-gray-900">DSA Practice</h3>
                 <p className="text-gray-600 leading-relaxed">
-                  Beautiful yearly heatmaps that show your consistency at a glance. Watch your streaks grow and stay motivated.
+                  Master data structures and algorithms. Track your daily problem-solving progress.
+                </p>
+              </div>
+            </Card>
+
+            <Card className="p-8 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-green-50 to-emerald-50">
+              <div className="space-y-4">
+                <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center">
+                  <Code className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">Projects</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Build and ship projects. Track your development work and portfolio growth.
                 </p>
               </div>
             </Card>
@@ -122,21 +133,21 @@ const Index = () => {
                 <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center">
                   <Target className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900">Flexible Habit Types</h3>
+                <h3 className="text-xl font-bold text-gray-900">Core Skills</h3>
                 <p className="text-gray-600 leading-relaxed">
-                  Track simple yes/no habits, rate your mood, or log quantities. Customize colors and options to fit your needs.
+                  Learn new technologies, frameworks, and deepen your technical knowledge.
                 </p>
               </div>
             </Card>
 
-            <Card className="p-8 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-emerald-50 to-green-50">
+            <Card className="p-8 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-gradient-to-br from-orange-50 to-red-50">
               <div className="space-y-4">
-                <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-green-500 rounded-2xl flex items-center justify-center">
-                  <TrendingUp className="w-8 h-8 text-white" />
+                <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center">
+                  <Share2 className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900">Smart Analytics</h3>
+                <h3 className="text-xl font-bold text-gray-900">Social Media</h3>
                 <p className="text-gray-600 leading-relaxed">
-                  Get insights into your habits with completion rates, streak tracking, and detailed notes for reflection.
+                  Build your developer brand. Share your journey and connect with the community.
                 </p>
               </div>
             </Card>
@@ -144,72 +155,54 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Habit Types Showcase */}
+      {/* Features Section */}
       <section className="py-20 px-6 bg-gradient-to-r from-gray-50 to-gray-100">
         <div className="max-w-7xl mx-auto">
           <div className="text-center space-y-4 mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900">
-              Three Powerful Ways to Track
+              Built for Developers, By Developers
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Choose the tracking method that works best for each of your habits
+              Powerful features designed to accelerate your coding journey
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center space-y-6">
-              <div className="w-20 h-20 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full flex items-center justify-center mx-auto">
-                <CheckCircle className="w-10 h-10 text-white" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-gray-900">Yes/No Tracking</h3>
-                <p className="text-gray-600">Perfect for simple habits like "Did I exercise today?" or "Did I read?"</p>
-              </div>
-              <div className="bg-white p-4 rounded-xl shadow-lg">
-                <div className="flex justify-center space-x-2">
-                  {[1, 2, 3, 4, 5, 6, 7].map((day, i) => (
-                    <div key={day} className={`w-6 h-6 rounded ${i < 5 ? 'bg-emerald-500' : 'bg-gray-200'}`}></div>
-                  ))}
+            <Card className="p-8 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white">
+              <div className="space-y-4">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center">
+                  <Calendar className="w-8 h-8 text-white" />
                 </div>
-                <p className="text-sm text-gray-500 mt-2">5/7 days completed</p>
+                <h3 className="text-2xl font-bold text-gray-900">Progress Tracking</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Beautiful weekly, monthly, and yearly views to visualize your consistency and growth over time.
+                </p>
               </div>
-            </div>
+            </Card>
 
-            <div className="text-center space-y-6">
-              <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center mx-auto">
-                <List className="w-10 h-10 text-white" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-gray-900">Multiple Choice</h3>
-                <p className="text-gray-600">Track mood, energy levels, or any categorical data with custom colors</p>
-              </div>
-              <div className="bg-white p-4 rounded-xl shadow-lg">
-                <div className="flex justify-center space-x-2">
-                  {['bg-green-500', 'bg-yellow-500', 'bg-red-500', 'bg-green-500', 'bg-blue-500', 'bg-gray-200', 'bg-gray-200'].map((color, i) => (
-                    <div key={i} className={`w-6 h-6 rounded ${color}`}></div>
-                  ))}
+            <Card className="p-8 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white">
+              <div className="space-y-4">
+                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center">
+                  <CheckCircle className="w-8 h-8 text-white" />
                 </div>
-                <p className="text-sm text-gray-500 mt-2">Mood tracking</p>
+                <h3 className="text-2xl font-bold text-gray-900">Subtask Management</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Break down complex habits into manageable subtasks. Perfect for tracking specific learning goals.
+                </p>
               </div>
-            </div>
+            </Card>
 
-            <div className="text-center space-y-6">
-              <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto">
-                <BarChart3 className="w-10 h-10 text-white" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-gray-900">Range Tracking</h3>
-                <p className="text-gray-600">Log quantities like glasses of water, hours studied, or workout intensity</p>
-              </div>
-              <div className="bg-white p-4 rounded-xl shadow-lg">
-                <div className="flex justify-center space-x-2">
-                  {[0.9, 0.7, 0.5, 0.8, 0.6, 0.3, 0.4].map((opacity, i) => (
-                    <div key={i} className="w-6 h-6 rounded bg-purple-500" style={{opacity}}></div>
-                  ))}
+            <Card className="p-8 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white">
+              <div className="space-y-4">
+                <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-green-500 rounded-2xl flex items-center justify-center">
+                  <TrendingUp className="w-8 h-8 text-white" />
                 </div>
-                <p className="text-sm text-gray-500 mt-2">Water intake (1-10 glasses)</p>
+                <h3 className="text-2xl font-bold text-gray-900">Career Growth</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Focus on the habits that matter most for your development career and professional growth.
+                </p>
               </div>
-            </div>
+            </Card>
           </div>
         </div>
       </section>
@@ -259,10 +252,10 @@ const Index = () => {
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <div className="space-y-4">
             <h2 className="text-4xl md:text-5xl font-bold text-white">
-              Ready to Transform Your Life?
+              Ready to Level Up Your Dev Career?
             </h2>
             <p className="text-xl text-indigo-100 max-w-2xl mx-auto">
-              Start building better habits today. It's free, easy to use, and takes less than 2 minutes to set up.
+              Join thousands of developers who are building better coding habits and accelerating their careers.
             </p>
           </div>
           
@@ -272,10 +265,10 @@ const Index = () => {
               size="lg"
               className="bg-white text-indigo-600 hover:bg-gray-50 text-lg px-8 py-4 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
             >
-              Start Your Free Journey
+              Start Your Grind Today
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
-            <p className="text-indigo-200 text-sm">No credit card required • Start in seconds</p>
+            <p className="text-indigo-200 text-sm">Free forever • No credit card required</p>
           </div>
         </div>
       </section>
@@ -287,10 +280,10 @@ const Index = () => {
             <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
               <Calendar className="w-5 h-5 text-white" />
             </div>
-            <h3 className="text-2xl font-bold">HabitFlow</h3>
+            <h3 className="text-2xl font-bold">Grind Flow</h3>
           </div>
           <div className="text-center text-gray-400">
-            <p>&copy; 2024 HabitFlow. All rights reserved. Built with ❤️ for habit builders everywhere.</p>
+            <p>&copy; 2024 Grind Flow. All rights reserved. Built with ❤️ for developers who never stop grinding.</p>
           </div>
         </div>
       </footer>
