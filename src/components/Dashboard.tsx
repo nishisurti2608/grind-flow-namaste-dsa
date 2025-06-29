@@ -15,6 +15,7 @@ export interface Habit {
   name: string;
   type: 'checkbox' | 'dropdown' | 'range';
   options?: string[];
+  option_colors?: { [key: string]: string };
   min_value?: number;
   max_value?: number;
   color: string;
@@ -26,6 +27,7 @@ export interface HabitEntry {
   date: string;
   value: any;
   completed: boolean;
+  notes?: string;
 }
 
 const Dashboard = ({ onBack }: { onBack: () => void }) => {
@@ -58,6 +60,7 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
         name: habit.name,
         type: habit.type as 'checkbox' | 'dropdown' | 'range',
         options: habit.options as string[],
+        option_colors: habit.option_colors as { [key: string]: string },
         min_value: habit.min_value,
         max_value: habit.max_value,
         color: habit.color,
@@ -100,6 +103,7 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
           name: habitData.name,
           type: habitData.type,
           options: habitData.options,
+          option_colors: habitData.option_colors,
           min_value: habitData.min_value,
           max_value: habitData.max_value,
           color: habitData.color,
@@ -115,6 +119,7 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
         name: data.name,
         type: data.type as 'checkbox' | 'dropdown' | 'range',
         options: data.options as string[],
+        option_colors: data.option_colors as { [key: string]: string },
         min_value: data.min_value,
         max_value: data.max_value,
         color: data.color,
@@ -135,7 +140,7 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
     }
   };
 
-  const updateHabitEntry = async (habitId: string, date: string, value: any, completed: boolean) => {
+  const updateHabitEntry = async (habitId: string, date: string, value: any, completed: boolean, notes?: string) => {
     try {
       const { data, error } = await supabase
         .from('habit_entries')
@@ -144,6 +149,7 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
           date: date,
           value: value,
           completed: completed,
+          notes: notes || null,
           user_id: user?.id,
         })
         .select()
@@ -157,7 +163,7 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
         if (existing) {
           return prev.map(entry => 
             entry.habit_id === habitId && entry.date === date 
-              ? { ...entry, value, completed }
+              ? { ...entry, value, completed, notes }
               : entry
           );
         } else {
@@ -167,6 +173,7 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
             date: date,
             value: value,
             completed: completed,
+            notes: notes,
           }];
         }
       });
@@ -186,14 +193,14 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center font-sans">
         <div className="text-lg text-gray-600">Loading your habits...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 font-sans">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between max-w-7xl mx-auto">

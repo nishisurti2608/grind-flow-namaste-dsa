@@ -16,6 +16,7 @@ export type Database = {
           date: string
           habit_id: string
           id: string
+          notes: string | null
           updated_at: string | null
           user_id: string
           value: Json | null
@@ -26,6 +27,7 @@ export type Database = {
           date: string
           habit_id: string
           id?: string
+          notes?: string | null
           updated_at?: string | null
           user_id: string
           value?: Json | null
@@ -36,6 +38,7 @@ export type Database = {
           date?: string
           habit_id?: string
           id?: string
+          notes?: string | null
           updated_at?: string | null
           user_id?: string
           value?: Json | null
@@ -58,6 +61,7 @@ export type Database = {
           max_value: number | null
           min_value: number | null
           name: string
+          option_colors: Json | null
           options: Json | null
           type: string
           updated_at: string | null
@@ -70,6 +74,7 @@ export type Database = {
           max_value?: number | null
           min_value?: number | null
           name: string
+          option_colors?: Json | null
           options?: Json | null
           type: string
           updated_at?: string | null
@@ -82,6 +87,7 @@ export type Database = {
           max_value?: number | null
           min_value?: number | null
           name?: string
+          option_colors?: Json | null
           options?: Json | null
           type?: string
           updated_at?: string | null

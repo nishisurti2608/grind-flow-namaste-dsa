@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Habit } from './Dashboard';
-import { CheckCircle, List, BarChart3, X } from "lucide-react";
+import { CheckCircle, List, BarChart3, X, Palette } from "lucide-react";
 
 interface AddHabitModalProps {
   open: boolean;
@@ -19,6 +19,7 @@ const AddHabitModal = ({ open, onClose, onAdd }: AddHabitModalProps) => {
   const [name, setName] = useState('');
   const [type, setType] = useState<'checkbox' | 'dropdown' | 'range'>('checkbox');
   const [options, setOptions] = useState<string[]>([]);
+  const [optionColors, setOptionColors] = useState<{ [key: string]: string }>({});
   const [newOption, setNewOption] = useState('');
   const [minValue, setMinValue] = useState(0);
   const [maxValue, setMaxValue] = useState(10);
@@ -33,6 +34,8 @@ const AddHabitModal = ({ open, onClose, onAdd }: AddHabitModalProps) => {
     { name: 'Orange', value: 'bg-orange-500' },
     { name: 'Red', value: 'bg-red-500' },
     { name: 'Cyan', value: 'bg-cyan-500' },
+    { name: 'Yellow', value: 'bg-yellow-500' },
+    { name: 'Green', value: 'bg-green-500' },
   ];
 
   const habitTypes = [
@@ -54,6 +57,7 @@ const AddHabitModal = ({ open, onClose, onAdd }: AddHabitModalProps) => {
 
     if (type === 'dropdown') {
       habit.options = options;
+      habit.option_colors = optionColors;
     }
 
     if (type === 'range') {
@@ -67,6 +71,7 @@ const AddHabitModal = ({ open, onClose, onAdd }: AddHabitModalProps) => {
     setName('');
     setType('checkbox');
     setOptions([]);
+    setOptionColors({});
     setNewOption('');
     setMinValue(0);
     setMaxValue(10);
@@ -76,18 +81,27 @@ const AddHabitModal = ({ open, onClose, onAdd }: AddHabitModalProps) => {
 
   const addOption = () => {
     if (newOption.trim() && !options.includes(newOption.trim())) {
-      setOptions([...options, newOption.trim()]);
+      const option = newOption.trim();
+      setOptions([...options, option]);
+      setOptionColors({ ...optionColors, [option]: 'bg-blue-500' });
       setNewOption('');
     }
   };
 
   const removeOption = (optionToRemove: string) => {
     setOptions(options.filter(option => option !== optionToRemove));
+    const newOptionColors = { ...optionColors };
+    delete newOptionColors[optionToRemove];
+    setOptionColors(newOptionColors);
+  };
+
+  const updateOptionColor = (option: string, color: string) => {
+    setOptionColors({ ...optionColors, [option]: color });
   };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg font-sans">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-gray-900">
             Create New Habit
@@ -162,17 +176,37 @@ const AddHabitModal = ({ open, onClose, onAdd }: AddHabitModalProps) => {
                 </Button>
               </div>
               {options.length > 0 && (
-                <div className="flex flex-wrap gap-2">
+                <div className="space-y-3">
                   {options.map((option) => (
-                    <Badge
-                      key={option}
-                      variant="secondary"
-                      className="bg-gray-100 text-gray-800 hover:bg-red-100 cursor-pointer px-3 py-1"
-                      onClick={() => removeOption(option)}
-                    >
-                      {option}
-                      <X className="w-3 h-3 ml-1" />
-                    </Badge>
+                    <div key={option} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-4 h-4 rounded ${optionColors[option] || 'bg-gray-300'}`}></div>
+                        <span className="font-medium text-gray-900">{option}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="flex space-x-1">
+                          {colors.slice(0, 6).map((colorOption) => (
+                            <div
+                              key={colorOption.value}
+                              className={`w-6 h-6 rounded cursor-pointer transition-all ${colorOption.value} ${
+                                optionColors[option] === colorOption.value ? 'ring-2 ring-gray-400 ring-offset-1' : 'hover:scale-110'
+                              }`}
+                              onClick={() => updateOptionColor(option, colorOption.value)}
+                              title={colorOption.name}
+                            />
+                          ))}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeOption(option)}
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}
