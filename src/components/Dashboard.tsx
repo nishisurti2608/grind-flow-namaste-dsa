@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Plus, Settings, Calendar, TrendingUp } from "lucide-react";
+import { ArrowLeft, Plus, Calendar, TrendingUp } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -13,11 +13,6 @@ import AddHabitModal from './AddHabitModal';
 export interface Habit {
   id: string;
   name: string;
-  type: 'checkbox' | 'dropdown' | 'range';
-  options?: string[];
-  option_colors?: { [key: string]: string };
-  min_value?: number;
-  max_value?: number;
   color: string;
 }
 
@@ -25,7 +20,6 @@ export interface HabitEntry {
   id: string;
   habit_id: string;
   date: string;
-  value: any;
   completed: boolean;
   notes?: string;
 }
@@ -58,11 +52,6 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
       const formattedHabits = data.map(habit => ({
         id: habit.id,
         name: habit.name,
-        type: habit.type as 'checkbox' | 'dropdown' | 'range',
-        options: habit.options as string[],
-        option_colors: habit.option_colors as { [key: string]: string },
-        min_value: habit.min_value,
-        max_value: habit.max_value,
         color: habit.color,
       }));
 
@@ -101,11 +90,6 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
         .from('habits')
         .insert([{
           name: habitData.name,
-          type: habitData.type,
-          options: habitData.options,
-          option_colors: habitData.option_colors,
-          min_value: habitData.min_value,
-          max_value: habitData.max_value,
           color: habitData.color,
           user_id: user?.id,
         }])
@@ -117,11 +101,6 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
       const newHabit = {
         id: data.id,
         name: data.name,
-        type: data.type as 'checkbox' | 'dropdown' | 'range',
-        options: data.options as string[],
-        option_colors: data.option_colors as { [key: string]: string },
-        min_value: data.min_value,
-        max_value: data.max_value,
         color: data.color,
       };
 
@@ -140,14 +119,13 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
     }
   };
 
-  const updateHabitEntry = async (habitId: string, date: string, value: any, completed: boolean, notes?: string) => {
+  const updateHabitEntry = async (habitId: string, date: string, completed: boolean, notes?: string) => {
     try {
       const { data, error } = await supabase
         .from('habit_entries')
         .upsert({
           habit_id: habitId,
           date: date,
-          value: value,
           completed: completed,
           notes: notes || null,
           user_id: user?.id,
@@ -163,7 +141,7 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
         if (existing) {
           return prev.map(entry => 
             entry.habit_id === habitId && entry.date === date 
-              ? { ...entry, value, completed, notes }
+              ? { ...entry, completed, notes }
               : entry
           );
         } else {
@@ -171,7 +149,6 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
             id: data.id,
             habit_id: habitId,
             date: date,
-            value: value,
             completed: completed,
             notes: notes,
           }];
@@ -180,7 +157,7 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
 
       toast({
         title: completed ? "Great job!" : "Entry updated",
-        description: completed ? "You've completed this habit for today!" : "Your entry has been saved.",
+        description: completed ? "You've completed this habit!" : "Your entry has been saved.",
       });
     } catch (error) {
       toast({
