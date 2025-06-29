@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,6 +9,7 @@ import HeatmapCalendar from './HeatmapCalendar';
 import HabitList from './HabitList';
 import AddHabitModal from './AddHabitModal';
 import EditHabitModal from './EditHabitModal';
+import OverallProgressView from './OverallProgressView';
 
 export interface Habit {
   id: string;
@@ -42,6 +42,7 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<'individual' | 'overall'>('individual');
 
   useEffect(() => {
     if (user) {
@@ -50,6 +51,18 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
       fetchSubtasks();
     }
   }, [user]);
+
+  // Auto-select first habit when habits change
+  useEffect(() => {
+    if (habits.length > 0 && !selectedHabit) {
+      setSelectedHabit(habits[0]);
+    } else if (habits.length === 0) {
+      setSelectedHabit(null);
+    } else if (selectedHabit && !habits.find(h => h.id === selectedHabit.id)) {
+      // If current selected habit was deleted, select the first available habit
+      setSelectedHabit(habits[0]);
+    }
+  }, [habits, selectedHabit]);
 
   const fetchHabits = async () => {
     try {
@@ -67,9 +80,6 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
       }));
 
       setHabits(formattedHabits);
-      if (formattedHabits.length > 0 && !selectedHabit) {
-        setSelectedHabit(formattedHabits[0]);
-      }
     } catch (error) {
       toast({
         title: "Error fetching habits",
@@ -184,12 +194,9 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
 
       if (error) throw error;
 
-      setHabits(habits.filter(habit => habit.id !== habitId));
+      const updatedHabits = habits.filter(habit => habit.id !== habitId);
+      setHabits(updatedHabits);
       
-      if (selectedHabit?.id === habitId) {
-        setSelectedHabit(habits.find(h => h.id !== habitId) || null);
-      }
-
       toast({
         title: "Habit deleted",
         description: "Your habit has been deleted successfully.",
@@ -415,29 +422,59 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
 
             {/* Main Content */}
             <div className="lg:col-span-3">
-              {selectedHabit ? (
-                <div className="bg-white rounded-xl border border-gray-200 p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center space-x-3">
+              <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-3">
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      Progress Tracking
+                    </h2>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant={viewMode === 'individual' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setViewMode('individual')}
+                    >
+                      Individual
+                    </Button>
+                    <Button
+                      variant={viewMode === 'overall' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setViewMode('overall')}
+                    >
+                      Overall
+                    </Button>
+                  </div>
+                </div>
+
+                {viewMode === 'individual' && selectedHabit ? (
+                  <div>
+                    <div className="flex items-center space-x-3 mb-6">
                       <div className={`w-4 h-4 rounded-full ${selectedHabit.color}`}></div>
                       <div>
-                        <h2 className="text-2xl font-bold text-gray-900">
+                        <h3 className="text-xl font-semibold text-gray-900">
                           {selectedHabit.name}
-                        </h2>
+                        </h3>
                         <p className="text-gray-600">
                           Track your progress and build consistency
                         </p>
                       </div>
                     </div>
-                  </div>
 
-                  <HeatmapCalendar
-                    habit={selectedHabit}
-                    entries={habitEntries.filter(entry => entry.habit_id === selectedHabit.id)}
+                    <HeatmapCalendar
+                      habit={selectedHabit}
+                      entries={habitEntries.filter(entry => entry.habit_id === selectedHabit.id)}
+                      onUpdateEntry={updateHabitEntry}
+                    />
+                  </div>
+                ) : (
+                  <OverallProgressView
+                    habits={habits}
+                    habitEntries={habitEntries}
                     onUpdateEntry={updateHabitEntry}
                   />
-                </div>
-              ) : null}
+                )}
+              </div>
             </div>
           </div>
         )}
