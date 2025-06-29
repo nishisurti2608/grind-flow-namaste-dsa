@@ -10,6 +10,7 @@ import HabitList from './HabitList';
 import AddHabitModal from './AddHabitModal';
 import EditHabitModal from './EditHabitModal';
 import OverallProgressView from './OverallProgressView';
+import DashboardStats from './DashboardStats';
 
 export interface Habit {
   id: string;
@@ -404,76 +405,81 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
             </Button>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-4 gap-8">
-            {/* Sidebar */}
-            <div className="lg:col-span-1">
-              <HabitList 
-                habits={habits}
-                subtasks={subtasks}
-                selectedHabit={selectedHabit}
-                onSelectHabit={setSelectedHabit}
-                onEditHabit={setEditingHabit}
-                onDeleteHabit={deleteHabit}
-                onAddSubtask={addSubtask}
-                onUpdateSubtask={updateSubtask}
-                onDeleteSubtask={deleteSubtask}
-              />
-            </div>
+          <div>
+            {/* Dashboard Stats */}
+            <DashboardStats habits={habits} habitEntries={habitEntries} />
+            
+            <div className="grid lg:grid-cols-4 gap-8">
+              {/* Sidebar */}
+              <div className="lg:col-span-1">
+                <HabitList 
+                  habits={habits}
+                  subtasks={subtasks}
+                  selectedHabit={selectedHabit}
+                  onSelectHabit={setSelectedHabit}
+                  onEditHabit={setEditingHabit}
+                  onDeleteHabit={deleteHabit}
+                  onAddSubtask={addSubtask}
+                  onUpdateSubtask={updateSubtask}
+                  onDeleteSubtask={deleteSubtask}
+                />
+              </div>
 
-            {/* Main Content */}
-            <div className="lg:col-span-3">
-              <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center space-x-3">
-                    <h2 className="text-2xl font-bold text-gray-900">
-                      Progress Tracking
-                    </h2>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant={viewMode === 'individual' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setViewMode('individual')}
-                    >
-                      Individual
-                    </Button>
-                    <Button
-                      variant={viewMode === 'overall' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setViewMode('overall')}
-                    >
-                      Overall
-                    </Button>
-                  </div>
-                </div>
-
-                {viewMode === 'individual' && selectedHabit ? (
-                  <div>
-                    <div className="flex items-center space-x-3 mb-6">
-                      <div className={`w-4 h-4 rounded-full ${selectedHabit.color}`}></div>
-                      <div>
-                        <h3 className="text-xl font-semibold text-gray-900">
-                          {selectedHabit.name}
-                        </h3>
-                        <p className="text-gray-600">
-                          Track your progress and build consistency
-                        </p>
-                      </div>
+              {/* Main Content */}
+              <div className="lg:col-span-3">
+                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center space-x-3">
+                      <h2 className="text-2xl font-bold text-gray-900">
+                        Progress Tracking
+                      </h2>
                     </div>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant={viewMode === 'individual' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setViewMode('individual')}
+                      >
+                        Individual
+                      </Button>
+                      <Button
+                        variant={viewMode === 'overall' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setViewMode('overall')}
+                      >
+                        Overall
+                      </Button>
+                    </div>
+                  </div>
 
-                    <HeatmapCalendar
-                      habit={selectedHabit}
-                      entries={habitEntries.filter(entry => entry.habit_id === selectedHabit.id)}
+                  {viewMode === 'individual' && selectedHabit ? (
+                    <div>
+                      <div className="flex items-center space-x-3 mb-6">
+                        <div className={`w-4 h-4 rounded-full ${selectedHabit.color}`}></div>
+                        <div>
+                          <h3 className="text-xl font-semibold text-gray-900">
+                            {selectedHabit.name}
+                          </h3>
+                          <p className="text-gray-600">
+                            Track your progress and build consistency
+                          </p>
+                        </div>
+                      </div>
+
+                      <HeatmapCalendar
+                        habit={selectedHabit}
+                        entries={habitEntries.filter(entry => entry.habit_id === selectedHabit.id)}
+                        onUpdateEntry={updateHabitEntry}
+                      />
+                    </div>
+                  ) : (
+                    <OverallProgressView
+                      habits={habits}
+                      habitEntries={habitEntries}
                       onUpdateEntry={updateHabitEntry}
                     />
-                  </div>
-                ) : (
-                  <OverallProgressView
-                    habits={habits}
-                    habitEntries={habitEntries}
-                    onUpdateEntry={updateHabitEntry}
-                  />
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>

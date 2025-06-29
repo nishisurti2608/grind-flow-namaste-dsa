@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -115,8 +114,8 @@ const Auth = () => {
             Back
           </Button>
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg"></div>
-            <h1 className="text-2xl font-bold text-slate-800">HabitFlow</h1>
+            <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg"></div>
+            <h1 className="text-2xl font-bold text-slate-800">Grind Flow</h1>
           </div>
         </div>
 
@@ -171,7 +170,7 @@ const Auth = () => {
             <TabsContent value="signup" className="space-y-4">
               <div className="text-center">
                 <h2 className="text-2xl font-bold text-slate-800">Create account</h2>
-                <p className="text-slate-600 mt-2">Start your habit journey today</p>
+                <p className="text-slate-600 mt-2">Start your grind journey today</p>
               </div>
 
               <form onSubmit={handleSignUp} className="space-y-4">
