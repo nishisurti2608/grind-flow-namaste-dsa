@@ -2,7 +2,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Habit } from './Dashboard';
-import { CheckCircle, BarChart3, List } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 
 interface HabitListProps {
   habits: Habit[];
@@ -11,33 +11,6 @@ interface HabitListProps {
 }
 
 const HabitList = ({ habits, selectedHabit, onSelectHabit }: HabitListProps) => {
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'checkbox': return <CheckCircle className="w-4 h-4" />;
-      case 'dropdown': return <List className="w-4 h-4" />;
-      case 'range': return <BarChart3 className="w-4 h-4" />;
-      default: return <CheckCircle className="w-4 h-4" />;
-    }
-  };
-
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'checkbox': return 'Yes/No';
-      case 'dropdown': return 'Choice';
-      case 'range': return 'Range';
-      default: return type;
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'checkbox': return 'text-emerald-700 bg-emerald-50 border-emerald-200';
-      case 'dropdown': return 'text-blue-700 bg-blue-50 border-blue-200';
-      case 'range': return 'text-purple-700 bg-purple-50 border-purple-200';
-      default: return 'text-gray-700 bg-gray-50 border-gray-200';
-    }
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -69,24 +42,11 @@ const HabitList = ({ habits, selectedHabit, onSelectHabit }: HabitListProps) => 
               </div>
               
               <div className="flex items-center justify-between">
-                <div className={`inline-flex items-center space-x-1 px-2 py-1 rounded-md text-xs font-medium border ${getTypeColor(habit.type)}`}>
-                  {getTypeIcon(habit.type)}
-                  <span>{getTypeLabel(habit.type)}</span>
+                <div className="inline-flex items-center space-x-1 px-2 py-1 rounded-md text-xs font-medium border text-emerald-700 bg-emerald-50 border-emerald-200">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Checkmark</span>
                 </div>
-                
-                {habit.type === 'range' && habit.max_value && (
-                  <span className="text-xs text-gray-500 font-medium">
-                    0-{habit.max_value}
-                  </span>
-                )}
               </div>
-
-              {habit.type === 'dropdown' && habit.options && (
-                <div className="text-xs text-gray-500">
-                  {habit.options.slice(0, 3).join(' • ')}
-                  {habit.options.length > 3 && '...'}
-                </div>
-              )}
             </div>
           </Card>
         ))}

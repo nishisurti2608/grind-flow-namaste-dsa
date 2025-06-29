@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -91,6 +90,7 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
         .insert([{
           name: habitData.name,
           color: habitData.color,
+          type: 'checkbox', // Default type for simplified habits
           user_id: user?.id,
         }])
         .select()
