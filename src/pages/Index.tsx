@@ -3,12 +3,25 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Calendar, CheckCircle, TrendingUp, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import Dashboard from '../components/Dashboard';
 
 const Index = () => {
   const [showDashboard, setShowDashboard] = useState(false);
+  const navigate = useNavigate();
+  const { user, loading, signOut } = useAuth();
 
-  if (showDashboard) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+        <div className="text-lg text-slate-600">Loading...</div>
+      </div>
+    );
+  }
+
+  // If user is logged in, show dashboard option
+  if (user && showDashboard) {
     return <Dashboard onBack={() => setShowDashboard(false)} />;
   }
 
@@ -22,12 +35,36 @@ const Index = () => {
             <h1 className="text-xl font-bold text-slate-800">HabitFlow</h1>
           </div>
           <div className="space-x-4">
-            <Button variant="ghost" className="text-slate-600 hover:text-slate-800">
-              Sign In
-            </Button>
-            <Button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700">
-              Get Started
-            </Button>
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <span className="text-slate-600">Welcome back!</span>
+                <Button
+                  onClick={() => setShowDashboard(true)}
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+                >
+                  Go to Dashboard
+                </Button>
+                <Button variant="ghost" onClick={signOut} className="text-slate-600 hover:text-slate-800">
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Button 
+                  variant="ghost" 
+                  className="text-slate-600 hover:text-slate-800"
+                  onClick={() => navigate('/auth')}
+                >
+                  Sign In
+                </Button>
+                <Button 
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+                  onClick={() => navigate('/auth')}
+                >
+                  Get Started
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -46,16 +83,33 @@ const Index = () => {
             Visualize your consistency, celebrate your wins, and build lasting change.
           </p>
           <div className="space-x-4">
-            <Button 
-              size="lg" 
-              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-8 py-6 text-lg"
-              onClick={() => setShowDashboard(true)}
-            >
-              Try Demo Dashboard
-            </Button>
-            <Button size="lg" variant="outline" className="px-8 py-6 text-lg border-slate-300">
-              Learn More
-            </Button>
+            {user ? (
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-8 py-6 text-lg"
+                onClick={() => setShowDashboard(true)}
+              >
+                Go to Dashboard
+              </Button>
+            ) : (
+              <>
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-8 py-6 text-lg"
+                  onClick={() => navigate('/auth')}
+                >
+                  Start Free Trial
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="px-8 py-6 text-lg border-slate-300"
+                  onClick={() => setShowDashboard(true)}
+                >
+                  Try Demo
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -118,6 +172,7 @@ const Index = () => {
           <Button 
             size="lg" 
             className="bg-white text-blue-600 hover:bg-slate-50 px-8 py-6 text-lg font-semibold"
+            onClick={() => navigate('/auth')}
           >
             Start Your Journey Today
           </Button>

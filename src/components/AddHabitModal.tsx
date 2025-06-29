@@ -19,8 +19,8 @@ const AddHabitModal = ({ open, onClose, onAdd }: AddHabitModalProps) => {
   const [type, setType] = useState<'checkbox' | 'dropdown' | 'range'>('checkbox');
   const [options, setOptions] = useState<string[]>([]);
   const [newOption, setNewOption] = useState('');
-  const [min, setMin] = useState(0);
-  const [max, setMax] = useState(10);
+  const [minValue, setMinValue] = useState(0);
+  const [maxValue, setMaxValue] = useState(10);
   const [color, setColor] = useState('bg-blue-500');
 
   const colors = [
@@ -50,8 +50,8 @@ const AddHabitModal = ({ open, onClose, onAdd }: AddHabitModalProps) => {
     }
 
     if (type === 'range') {
-      habit.min = min;
-      habit.max = max;
+      habit.min_value = minValue;
+      habit.max_value = maxValue;
     }
 
     onAdd(habit);
@@ -61,8 +61,8 @@ const AddHabitModal = ({ open, onClose, onAdd }: AddHabitModalProps) => {
     setType('checkbox');
     setOptions([]);
     setNewOption('');
-    setMin(0);
-    setMax(10);
+    setMinValue(0);
+    setMaxValue(10);
     setColor('bg-blue-500');
     onClose();
   };
@@ -147,8 +147,8 @@ const AddHabitModal = ({ open, onClose, onAdd }: AddHabitModalProps) => {
                 <Input
                   id="min"
                   type="number"
-                  value={min}
-                  onChange={(e) => setMin(Number(e.target.value))}
+                  value={minValue}
+                  onChange={(e) => setMinValue(Number(e.target.value))}
                 />
               </div>
               <div className="space-y-2">
@@ -156,8 +156,8 @@ const AddHabitModal = ({ open, onClose, onAdd }: AddHabitModalProps) => {
                 <Input
                   id="max"
                   type="number"
-                  value={max}
-                  onChange={(e) => setMax(Number(e.target.value))}
+                  value={maxValue}
+                  onChange={(e) => setMaxValue(Number(e.target.value))}
                 />
               </div>
             </div>

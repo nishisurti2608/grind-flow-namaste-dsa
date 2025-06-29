@@ -9,7 +9,110 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      habit_entries: {
+        Row: {
+          completed: boolean | null
+          created_at: string | null
+          date: string
+          habit_id: string
+          id: string
+          updated_at: string | null
+          user_id: string
+          value: Json | null
+        }
+        Insert: {
+          completed?: boolean | null
+          created_at?: string | null
+          date: string
+          habit_id: string
+          id?: string
+          updated_at?: string | null
+          user_id: string
+          value?: Json | null
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string | null
+          date?: string
+          habit_id?: string
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+          value?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "habit_entries_habit_id_fkey"
+            columns: ["habit_id"]
+            isOneToOne: false
+            referencedRelation: "habits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      habits: {
+        Row: {
+          color: string
+          created_at: string | null
+          id: string
+          max_value: number | null
+          min_value: number | null
+          name: string
+          options: Json | null
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          color: string
+          created_at?: string | null
+          id?: string
+          max_value?: number | null
+          min_value?: number | null
+          name: string
+          options?: Json | null
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string | null
+          id?: string
+          max_value?: number | null
+          min_value?: number | null
+          name?: string
+          options?: Json | null
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

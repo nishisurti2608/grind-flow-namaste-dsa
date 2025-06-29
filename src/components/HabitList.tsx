@@ -64,9 +64,9 @@ const HabitList = ({ habits, selectedHabit, onSelectHabit }: HabitListProps) => 
                   {getTypeLabel(habit.type)}
                 </Badge>
                 
-                {habit.type === 'range' && habit.max && (
+                {habit.type === 'range' && habit.max_value && (
                   <span className="text-xs text-slate-500">
-                    0-{habit.max}
+                    0-{habit.max_value}
                   </span>
                 )}
               </div>
