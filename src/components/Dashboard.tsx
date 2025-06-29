@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Plus, Settings } from "lucide-react";
+import { ArrowLeft, Plus, Settings, Calendar, TrendingUp } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -186,89 +186,107 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <div className="text-lg text-slate-600">Loading your habits...</div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-lg text-gray-600">Loading your habits...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="border-b border-slate-200 bg-white/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+      <header className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" onClick={onBack}>
+            <Button variant="ghost" size="sm" onClick={onBack} className="text-gray-600">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
+              Back
             </Button>
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg"></div>
-              <h1 className="text-xl font-bold text-slate-800">HabitFlow Dashboard</h1>
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <Calendar className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">HabitFlow</h1>
+                <p className="text-sm text-gray-500">Track your daily habits</p>
+              </div>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-slate-600">Welcome, {user?.email}</span>
+          <div className="flex items-center space-x-3">
+            <span className="text-sm text-gray-600 hidden sm:block">
+              {user?.email}
+            </span>
             <Button 
-              variant="outline" 
-              size="sm"
               onClick={() => setShowAddModal(true)}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Habit
             </Button>
-            <Button variant="ghost" size="sm" onClick={signOut}>
+            <Button variant="ghost" size="sm" onClick={signOut} className="text-gray-600">
               Sign Out
             </Button>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <HabitList 
-              habits={habits}
-              selectedHabit={selectedHabit}
-              onSelectHabit={setSelectedHabit}
-            />
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {habits.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <TrendingUp className="w-8 h-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No habits yet</h3>
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              Create your first habit to start tracking your progress and building better routines.
+            </p>
+            <Button 
+              onClick={() => setShowAddModal(true)}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create Your First Habit
+            </Button>
           </div>
+        ) : (
+          <div className="grid lg:grid-cols-4 gap-8">
+            {/* Sidebar */}
+            <div className="lg:col-span-1">
+              <HabitList 
+                habits={habits}
+                selectedHabit={selectedHabit}
+                onSelectHabit={setSelectedHabit}
+              />
+            </div>
 
-          {/* Main Content */}
-          <div className="lg:col-span-3">
-            <Card className="p-6 border-slate-200">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-slate-800">
-                    {selectedHabit?.name || 'Select a habit'}
-                  </h2>
-                  <p className="text-slate-600 mt-1">
-                    Track your progress and build consistency
-                  </p>
-                </div>
-              </div>
-
+            {/* Main Content */}
+            <div className="lg:col-span-3">
               {selectedHabit ? (
-                <HeatmapCalendar
-                  habit={selectedHabit}
-                  entries={habitEntries.filter(entry => entry.habit_id === selectedHabit.id)}
-                  onUpdateEntry={updateHabitEntry}
-                />
-              ) : habits.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="text-slate-400 mb-4 text-4xl">📝</div>
-                  <h3 className="text-lg font-semibold text-slate-800 mb-2">No habits yet</h3>
-                  <p className="text-slate-600 mb-4">Create your first habit to start tracking your progress!</p>
-                  <Button onClick={() => setShowAddModal(true)}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Your First Habit
-                  </Button>
+                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-4 h-4 rounded-full ${selectedHabit.color}`}></div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-900">
+                          {selectedHabit.name}
+                        </h2>
+                        <p className="text-gray-600">
+                          Track your progress and build consistency
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <HeatmapCalendar
+                    habit={selectedHabit}
+                    entries={habitEntries.filter(entry => entry.habit_id === selectedHabit.id)}
+                    onUpdateEntry={updateHabitEntry}
+                  />
                 </div>
               ) : null}
-            </Card>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <AddHabitModal
