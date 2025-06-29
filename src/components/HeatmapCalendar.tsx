@@ -53,7 +53,7 @@ const HeatmapCalendar = ({ habit, entries, onUpdateEntry }: HeatmapCalendarProps
       return `${habit.color} opacity-80 hover:opacity-100`;
     } else if (habit.type === 'range') {
       const value = entry.value as number;
-      const max = habit.max || 10;
+      const max = habit.max_value || 10;
       const intensity = value / max;
       if (intensity > 0.75) return `${habit.color} opacity-90 hover:opacity-100`;
       if (intensity > 0.5) return `${habit.color} opacity-70 hover:opacity-80`;
@@ -156,14 +156,14 @@ const HeatmapCalendar = ({ habit, entries, onUpdateEntry }: HeatmapCalendarProps
               {habit.type === 'range' && (
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm text-slate-600">
-                    <span>{habit.min || 0}</span>
-                    <span>{habit.max || 10}</span>
+                    <span>{habit.min_value || 0}</span>
+                    <span>{habit.max_value || 10}</span>
                   </div>
                   <Slider
                     value={[selectedEntry?.value as number || 0]}
                     onValueChange={(value) => handleValueUpdate(value[0])}
-                    max={habit.max || 10}
-                    min={habit.min || 0}
+                    max={habit.max_value || 10}
+                    min={habit.min_value || 0}
                     step={1}
                     className="w-full"
                   />
