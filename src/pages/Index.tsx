@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Calendar, TrendingUp, Target, Zap, CheckCircle, BarChart3, List, ArrowRight, Star, Users, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import Dashboard from "@/components/Dashboard";
 import ProfileSettings from "@/components/ProfileSettings";
 
 const Index = () => {
-  const { user, signInWithGoogle } = useAuth();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [currentView, setCurrentView] = useState<'landing' | 'dashboard' | 'profile'>('landing');
 
   if (user && currentView === 'dashboard') {
@@ -42,7 +44,7 @@ const Index = () => {
               </div>
             </div>
             <Button 
-              onClick={signInWithGoogle}
+              onClick={() => navigate('/auth')}
               className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
             >
               Get Started Free
@@ -70,7 +72,7 @@ const Index = () => {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button 
-                onClick={signInWithGoogle}
+                onClick={() => navigate('/auth')}
                 size="lg"
                 className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-lg px-8 py-4 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
               >
@@ -266,7 +268,7 @@ const Index = () => {
           
           <div className="space-y-4">
             <Button 
-              onClick={signInWithGoogle}
+              onClick={() => navigate('/auth')}
               size="lg"
               className="bg-white text-indigo-600 hover:bg-gray-50 text-lg px-8 py-4 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
             >
