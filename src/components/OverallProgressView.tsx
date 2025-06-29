@@ -1,10 +1,10 @@
-
 import { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCircle, Circle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Habit, HabitEntry } from './Dashboard';
+import OverallProgressChart from './OverallProgressChart';
 
 interface OverallProgressViewProps {
   habits: Habit[];
@@ -308,12 +308,17 @@ const OverallProgressView = ({ habits, habitEntries, onUpdateEntry }: OverallPro
 
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="weekly" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+      <Tabs defaultValue="chart" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="chart">Progress Chart</TabsTrigger>
           <TabsTrigger value="weekly">Weekly</TabsTrigger>
           <TabsTrigger value="monthly">Monthly</TabsTrigger>
           <TabsTrigger value="yearly">Yearly</TabsTrigger>
         </TabsList>
+        
+        <TabsContent value="chart" className="mt-6">
+          <OverallProgressChart habits={habits} habitEntries={habitEntries} />
+        </TabsContent>
         
         <TabsContent value="weekly" className="mt-6">
           {renderWeeklyOverview()}
