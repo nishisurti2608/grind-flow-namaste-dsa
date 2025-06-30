@@ -403,9 +403,11 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
               Back
             </Button>
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Calendar className="w-4 h-4 text-white" />
-              </div>
+              <img 
+                src="/lovable-uploads/bfdabed2-e05a-4763-a368-dacd61ff3332.png" 
+                alt="Grind Flow Logo" 
+                className="w-8 h-8 object-contain"
+              />
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Grind Flow</h1>
                 <p className="text-sm text-gray-500">Level up your dev skills daily</p>

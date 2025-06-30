@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -32,9 +33,11 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-white" />
-              </div>
+              <img 
+                src="/lovable-uploads/bfdabed2-e05a-4763-a368-dacd61ff3332.png" 
+                alt="Grind Flow Logo" 
+                className="w-10 h-10 object-contain"
+              />
               <div>
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                   Grind Flow
@@ -277,9 +280,11 @@ const Index = () => {
       <footer className="bg-gray-900 text-white py-12 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-center space-x-3 mb-8">
-            <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-white" />
-            </div>
+            <img 
+              src="/lovable-uploads/bfdabed2-e05a-4763-a368-dacd61ff3332.png" 
+              alt="Grind Flow Logo" 
+              className="w-10 h-10 object-contain"
+            />
             <h3 className="text-2xl font-bold">Grind Flow</h3>
           </div>
           <div className="text-center text-gray-400">

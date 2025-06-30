@@ -159,7 +159,11 @@ const Auth = () => {
             Back
           </Button>
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg"></div>
+            <img 
+              src="/lovable-uploads/bfdabed2-e05a-4763-a368-dacd61ff3332.png" 
+              alt="Grind Flow Logo" 
+              className="w-8 h-8 object-contain"
+            />
             <h1 className="text-2xl font-bold text-slate-800">Grind Flow</h1>
           </div>
         </div>
