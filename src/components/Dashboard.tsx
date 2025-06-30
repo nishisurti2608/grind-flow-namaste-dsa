@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Plus, Calendar, TrendingUp } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ArrowLeft, Plus, Calendar, TrendingUp, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -33,6 +34,11 @@ export interface Subtask {
   completed: boolean;
 }
 
+interface UserProfile {
+  full_name: string | null;
+  email: string | null;
+}
+
 const Dashboard = ({ onBack }: { onBack: () => void }) => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
@@ -44,12 +50,14 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'individual' | 'overall'>('individual');
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
     if (user) {
       fetchHabits();
       fetchHabitEntries();
       fetchSubtasks();
+      fetchUserProfile();
     }
   }, [user]);
 
@@ -64,6 +72,33 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
       setSelectedHabit(habits[0]);
     }
   }, [habits, selectedHabit]);
+
+  const fetchUserProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('full_name, email')
+        .eq('id', user?.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        // Fallback to user email if profile doesn't exist
+        setUserProfile({
+          full_name: user?.user_metadata?.full_name || null,
+          email: user?.email || null,
+        });
+      } else {
+        setUserProfile(data);
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      setUserProfile({
+        full_name: user?.user_metadata?.full_name || null,
+        email: user?.email || null,
+      });
+    }
+  };
 
   const fetchHabits = async () => {
     try {
@@ -340,6 +375,15 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
     }
   };
 
+  const getDisplayName = () => {
+    return userProfile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  };
+
+  const getInitials = () => {
+    const name = getDisplayName();
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center font-sans">
@@ -369,9 +413,18 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
             </div>
           </div>
           <div className="flex items-center space-x-3">
-            <span className="text-sm text-gray-600 hidden sm:block">
-              {user?.email}
-            </span>
+            <div className="flex items-center space-x-3">
+              <Avatar className="h-9 w-9">
+                <AvatarImage src="" alt={getDisplayName()} />
+                <AvatarFallback className="bg-indigo-100 text-indigo-600 text-sm font-medium">
+                  {getInitials()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="hidden sm:block">
+                <p className="text-sm font-medium text-gray-900">{getDisplayName()}</p>
+                <p className="text-xs text-gray-500">Welcome back!</p>
+              </div>
+            </div>
             <Button 
               onClick={() => setShowAddModal(true)}
               className="bg-indigo-600 hover:bg-indigo-700 text-white"
