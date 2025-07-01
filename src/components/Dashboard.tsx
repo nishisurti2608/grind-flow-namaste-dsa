@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Plus, Calendar, TrendingUp, User } from "lucide-react";
+import { Plus, Calendar, TrendingUp, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +12,7 @@ import AddHabitModal from './AddHabitModal';
 import EditHabitModal from './EditHabitModal';
 import OverallProgressView from './OverallProgressView';
 import DashboardStats from './DashboardStats';
+import DailyHistory from './DailyHistory';
 
 export interface Habit {
   id: string;
@@ -49,7 +50,7 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'individual' | 'overall'>('individual');
+  const [viewMode, setViewMode] = useState<'individual' | 'overall' | 'history'>('individual');
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
@@ -58,6 +59,7 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
       fetchHabitEntries();
       fetchSubtasks();
       fetchUserProfile();
+      checkAndArchiveCompletedDays();
     }
   }, [user]);
 
@@ -72,6 +74,62 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
       setSelectedHabit(habits[0]);
     }
   }, [habits, selectedHabit]);
+
+  const checkAndArchiveCompletedDays = async () => {
+    const today = new Date().toISOString().split('T')[0];
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    // Check if we need to archive yesterday's data
+    const { data: existingHistory } = await supabase
+      .from('daily_history')
+      .select('*')
+      .eq('date', yesterdayStr)
+      .eq('user_id', user?.id);
+
+    if (!existingHistory || existingHistory.length === 0) {
+      // Archive yesterday's data
+      await archiveDayData(yesterdayStr);
+    }
+  };
+
+  const archiveDayData = async (date: string) => {
+    try {
+      // Get all habits and their entries for the specific date
+      const { data: dayEntries } = await supabase
+        .from('habit_entries')
+        .select('*')
+        .eq('date', date)
+        .eq('user_id', user?.id);
+
+      const { data: allHabits } = await supabase
+        .from('habits')
+        .select('*')
+        .eq('user_id', user?.id);
+
+      if (allHabits) {
+        const completedCount = dayEntries?.filter(entry => entry.completed).length || 0;
+        const totalCount = allHabits.length;
+        const completionRate = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+
+        // Store in daily_history table
+        await supabase
+          .from('daily_history')
+          .insert({
+            user_id: user?.id,
+            date: date,
+            completed_tasks: completedCount,
+            total_tasks: totalCount,
+            completion_rate: completionRate,
+            habits_data: allHabits,
+            entries_data: dayEntries || []
+          });
+      }
+    } catch (error) {
+      console.error('Error archiving day data:', error);
+    }
+  };
 
   const fetchUserProfile = async () => {
     try {
@@ -328,6 +386,19 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
   };
 
   const updateHabitEntry = async (habitId: string, date: string, completed: boolean, notes?: string) => {
+    // Check if the date is today or in the future (allow editing)
+    const today = new Date().toISOString().split('T')[0];
+    const entryDate = new Date(date).toISOString().split('T')[0];
+    
+    if (entryDate < today) {
+      toast({
+        title: "Cannot edit past entries",
+        description: "You can only edit today's entries. Past entries are locked.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('habit_entries')
@@ -398,10 +469,6 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" onClick={onBack} className="text-gray-600">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
             <div className="flex items-center space-x-3">
               <img 
                 src="/lovable-uploads/bfdabed2-e05a-4763-a368-dacd61ff3332.png" 
@@ -504,6 +571,13 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
                       >
                         Overall
                       </Button>
+                      <Button
+                        variant={viewMode === 'history' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setViewMode('history')}
+                      >
+                        History
+                      </Button>
                     </div>
                   </div>
 
@@ -527,12 +601,14 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
                         onUpdateEntry={updateHabitEntry}
                       />
                     </div>
-                  ) : (
+                  ) : viewMode === 'overall' ? (
                     <OverallProgressView
                       habits={habits}
                       habitEntries={habitEntries}
                       onUpdateEntry={updateHabitEntry}
                     />
+                  ) : (
+                    <DailyHistory />
                   )}
                 </div>
               </div>
