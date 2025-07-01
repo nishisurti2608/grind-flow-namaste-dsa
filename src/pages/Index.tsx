@@ -24,7 +24,7 @@ const Index = () => {
   }
 
   if (showAuth) {
-    return <Auth onBack={() => setShowAuth(false)} />;
+    return <Auth />;
   }
 
   return (

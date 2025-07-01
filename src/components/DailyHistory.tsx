@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -38,7 +37,18 @@ const DailyHistory = () => {
 
       if (error) throw error;
 
-      setHistoryData(data || []);
+      // Transform the data to ensure proper typing
+      const transformedData: DailyHistoryData[] = (data || []).map(item => ({
+        id: item.id,
+        date: item.date,
+        completed_tasks: item.completed_tasks,
+        total_tasks: item.total_tasks,
+        completion_rate: item.completion_rate,
+        habits_data: Array.isArray(item.habits_data) ? item.habits_data : [],
+        entries_data: Array.isArray(item.entries_data) ? item.entries_data : []
+      }));
+
+      setHistoryData(transformedData);
     } catch (error) {
       console.error('Error fetching daily history:', error);
     } finally {
