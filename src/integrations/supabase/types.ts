@@ -9,6 +9,45 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      daily_history: {
+        Row: {
+          completed_tasks: number
+          completion_rate: number
+          created_at: string
+          date: string
+          entries_data: Json
+          habits_data: Json
+          id: string
+          total_tasks: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_tasks?: number
+          completion_rate?: number
+          created_at?: string
+          date: string
+          entries_data?: Json
+          habits_data?: Json
+          id?: string
+          total_tasks?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_tasks?: number
+          completion_rate?: number
+          created_at?: string
+          date?: string
+          entries_data?: Json
+          habits_data?: Json
+          id?: string
+          total_tasks?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       habit_entries: {
         Row: {
           completed: boolean | null

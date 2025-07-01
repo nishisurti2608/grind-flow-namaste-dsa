@@ -40,7 +40,7 @@ interface UserProfile {
   email: string | null;
 }
 
-const Dashboard = ({ onBack }: { onBack: () => void }) => {
+const Dashboard = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const [habits, setHabits] = useState<Habit[]>([]);
@@ -77,44 +77,58 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
 
   const checkAndArchiveCompletedDays = async () => {
     const today = new Date().toISOString().split('T')[0];
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    
+    // Get all unique dates from habit_entries that are before today
+    const { data: pastEntries } = await supabase
+      .from('habit_entries')
+      .select('date')
+      .eq('user_id', user?.id)
+      .lt('date', today);
 
-    // Check if we need to archive yesterday's data
-    const { data: existingHistory } = await supabase
-      .from('daily_history')
-      .select('*')
-      .eq('date', yesterdayStr)
-      .eq('user_id', user?.id);
+    if (pastEntries) {
+      const uniqueDates = [...new Set(pastEntries.map(entry => entry.date))];
+      
+      for (const date of uniqueDates) {
+        // Check if this date is already archived
+        const { data: existingHistory } = await supabase
+          .from('daily_history')
+          .select('id')
+          .eq('date', date)
+          .eq('user_id', user?.id);
 
-    if (!existingHistory || existingHistory.length === 0) {
-      // Archive yesterday's data
-      await archiveDayData(yesterdayStr);
+        if (!existingHistory || existingHistory.length === 0) {
+          await archiveDayData(date);
+        }
+      }
     }
   };
 
   const archiveDayData = async (date: string) => {
     try {
-      // Get all habits and their entries for the specific date
+      console.log(`Archiving data for date: ${date}`);
+      
+      // Get all habits that existed at the time
+      const { data: allHabits } = await supabase
+        .from('habits')
+        .select('*')
+        .eq('user_id', user?.id);
+
+      // Get all entries for the specific date
       const { data: dayEntries } = await supabase
         .from('habit_entries')
         .select('*')
         .eq('date', date)
         .eq('user_id', user?.id);
 
-      const { data: allHabits } = await supabase
-        .from('habits')
-        .select('*')
-        .eq('user_id', user?.id);
-
-      if (allHabits) {
+      if (allHabits && allHabits.length > 0) {
         const completedCount = dayEntries?.filter(entry => entry.completed).length || 0;
         const totalCount = allHabits.length;
         const completionRate = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
+        console.log(`Date: ${date}, Completed: ${completedCount}/${totalCount}, Rate: ${completionRate}%`);
+
         // Store in daily_history table
-        await supabase
+        const { error } = await supabase
           .from('daily_history')
           .insert({
             user_id: user?.id,
@@ -125,6 +139,12 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
             habits_data: allHabits,
             entries_data: dayEntries || []
           });
+
+        if (error) {
+          console.error('Error inserting daily history:', error);
+        } else {
+          console.log(`Successfully archived data for ${date}`);
+        }
       }
     } catch (error) {
       console.error('Error archiving day data:', error);
@@ -141,7 +161,6 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
 
       if (error) {
         console.error('Error fetching user profile:', error);
-        // Fallback to user email if profile doesn't exist
         setUserProfile({
           full_name: user?.user_metadata?.full_name || null,
           email: user?.email || null,
@@ -386,7 +405,7 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
   };
 
   const updateHabitEntry = async (habitId: string, date: string, completed: boolean, notes?: string) => {
-    // Check if the date is today or in the future (allow editing)
+    // Check if the date is today (only allow editing today's entries)
     const today = new Date().toISOString().split('T')[0];
     const entryDate = new Date(date).toISOString().split('T')[0];
     
@@ -465,7 +484,7 @@ const Dashboard = ({ onBack }: { onBack: () => void }) => {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      {/* Header */}
+      {/* Header - Back button removed */}
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center space-x-4">
