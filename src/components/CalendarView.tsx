@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -24,7 +23,17 @@ const CalendarView = ({ habit, entries, onUpdateEntry }: CalendarViewProps) => {
     return date.toISOString().split('T')[0];
   };
 
+  const isFutureDate = (date: string) => {
+    const today = new Date().toISOString().split('T')[0];
+    return date > today;
+  };
+
   const toggleHabit = (date: string) => {
+    // Prevent interaction with future dates
+    if (isFutureDate(date)) {
+      return;
+    }
+
     const entry = getEntryForDate(date);
     const newCompleted = !entry?.completed;
     onUpdateEntry(habit.id, date, newCompleted);
@@ -81,21 +90,26 @@ const CalendarView = ({ habit, entries, onUpdateEntry }: CalendarViewProps) => {
             const dateStr = formatDate(date);
             const entry = getEntryForDate(dateStr);
             const isCompleted = entry?.completed || false;
+            const isFuture = isFutureDate(dateStr);
             
             return (
               <Card
                 key={dateStr}
-                className={`p-4 cursor-pointer transition-all hover:shadow-md ${
-                  isCompleted ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50'
+                className={`p-4 transition-all ${
+                  isFuture 
+                    ? 'opacity-50 cursor-not-allowed bg-gray-100' 
+                    : `cursor-pointer hover:shadow-md ${
+                        isCompleted ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50'
+                      }`
                 }`}
-                onClick={() => toggleHabit(dateStr)}
+                onClick={() => !isFuture && toggleHabit(dateStr)}
               >
                 <div className="text-center">
                   <div className="text-sm font-medium mb-2">{date.getDate()}</div>
                   {isCompleted ? (
                     <CheckCircle className="w-6 h-6 text-green-600 mx-auto" />
                   ) : (
-                    <Circle className="w-6 h-6 text-gray-400 mx-auto" />
+                    <Circle className={`w-6 h-6 mx-auto ${isFuture ? 'text-gray-300' : 'text-gray-400'}`} />
                   )}
                 </div>
               </Card>
@@ -171,21 +185,26 @@ const CalendarView = ({ habit, entries, onUpdateEntry }: CalendarViewProps) => {
             const dateStr = formatDate(date);
             const entry = getEntryForDate(dateStr);
             const isCompleted = entry?.completed || false;
+            const isFuture = isFutureDate(dateStr);
             
             return (
               <Card
                 key={dateStr}
-                className={`p-2 cursor-pointer transition-all hover:shadow-md ${
-                  isCompleted ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50'
+                className={`p-2 transition-all ${
+                  isFuture 
+                    ? 'opacity-50 cursor-not-allowed bg-gray-100' 
+                    : `cursor-pointer hover:shadow-md ${
+                        isCompleted ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50'
+                      }`
                 }`}
-                onClick={() => toggleHabit(dateStr)}
+                onClick={() => !isFuture && toggleHabit(dateStr)}
               >
                 <div className="text-center">
                   <div className="text-sm font-medium mb-1">{date.getDate()}</div>
                   {isCompleted ? (
                     <CheckCircle className="w-4 h-4 text-green-600 mx-auto" />
                   ) : (
-                    <Circle className="w-4 h-4 text-gray-400 mx-auto" />
+                    <Circle className={`w-4 h-4 mx-auto ${isFuture ? 'text-gray-300' : 'text-gray-400'}`} />
                   )}
                 </div>
               </Card>

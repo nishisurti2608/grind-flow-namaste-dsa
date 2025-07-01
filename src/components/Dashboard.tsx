@@ -418,6 +418,16 @@ const Dashboard = () => {
       return;
     }
 
+    // Prevent marking future dates
+    if (entryDate > today) {
+      toast({
+        title: "Cannot mark future dates",
+        description: "You cannot mark future dates as complete.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('habit_entries')
@@ -452,6 +462,11 @@ const Dashboard = () => {
         }
       });
 
+      // Check if all habits for today are completed after this update
+      if (entryDate === today) {
+        checkAndAutoCompleteDay(date, habitId, completed);
+      }
+
       toast({
         title: completed ? "Great job!" : "Entry updated",
         description: completed ? "You've completed this habit!" : "Your entry has been saved.",
@@ -462,6 +477,50 @@ const Dashboard = () => {
         description: "Could not save your habit entry. Please try again.",
         variant: "destructive",
       });
+    }
+  };
+
+  const checkAndAutoCompleteDay = async (date: string, updatedHabitId: string, updatedCompleted: boolean) => {
+    try {
+      // Get all habits for the user
+      const allHabits = habits;
+      
+      // Get all entries for the specific date
+      const { data: dayEntries } = await supabase
+        .from('habit_entries')
+        .select('*')
+        .eq('date', date)
+        .eq('user_id', user?.id);
+
+      // Create a map of habit completions including the just-updated one
+      const completionMap = new Map();
+      
+      // Add existing entries to the map
+      dayEntries?.forEach(entry => {
+        completionMap.set(entry.habit_id, entry.completed);
+      });
+      
+      // Update with the current change
+      completionMap.set(updatedHabitId, updatedCompleted);
+
+      // Check if all habits are completed
+      const allCompleted = allHabits.every(habit => 
+        completionMap.get(habit.id) === true
+      );
+
+      if (allCompleted && allHabits.length > 0) {
+        toast({
+          title: "🎉 Day Completed!",
+          description: "Congratulations! You've completed all your habits for today!",
+        });
+
+        // Archive the day if it's not already archived
+        setTimeout(() => {
+          archiveDayData(date);
+        }, 1000);
+      }
+    } catch (error) {
+      console.error('Error checking day completion:', error);
     }
   };
 

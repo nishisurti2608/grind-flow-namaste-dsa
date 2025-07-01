@@ -18,11 +18,21 @@ const MonthlyProgressView = ({ habits, habitEntries, onUpdateEntry }: MonthlyPro
     return date.toISOString().split('T')[0];
   };
 
+  const isFutureDate = (date: string) => {
+    const today = new Date().toISOString().split('T')[0];
+    return date > today;
+  };
+
   const getEntryForHabitAndDate = (habitId: string, date: string) => {
     return habitEntries.find(entry => entry.habit_id === habitId && entry.date === date);
   };
 
   const toggleHabit = (habitId: string, date: string) => {
+    // Prevent interaction with future dates
+    if (isFutureDate(date)) {
+      return;
+    }
+
     const entry = getEntryForHabitAndDate(habitId, date);
     const newCompleted = !entry?.completed;
     onUpdateEntry(habitId, date, newCompleted);
@@ -98,14 +108,19 @@ const MonthlyProgressView = ({ habits, habitEntries, onUpdateEntry }: MonthlyPro
               const dateStr = formatDate(date);
               const entry = getEntryForHabitAndDate(habit.id, dateStr);
               const isCompleted = entry?.completed || false;
+              const isFuture = isFutureDate(dateStr);
               
               return (
                 <div
                   key={dateStr}
-                  className={`p-1 h-8 cursor-pointer rounded text-xs flex items-center justify-center transition-all hover:shadow-sm ${
-                    isCompleted ? `${habit.color} text-white` : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                  className={`p-1 h-8 rounded text-xs flex items-center justify-center transition-all ${
+                    isFuture 
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-50'
+                      : `cursor-pointer hover:shadow-sm ${
+                          isCompleted ? `${habit.color} text-white` : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                        }`
                   }`}
-                  onClick={() => toggleHabit(habit.id, dateStr)}
+                  onClick={() => !isFuture && toggleHabit(habit.id, dateStr)}
                 >
                   {date.getDate()}
                 </div>

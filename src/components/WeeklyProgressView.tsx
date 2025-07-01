@@ -18,11 +18,21 @@ const WeeklyProgressView = ({ habits, habitEntries, onUpdateEntry }: WeeklyProgr
     return date.toISOString().split('T')[0];
   };
 
+  const isFutureDate = (date: string) => {
+    const today = new Date().toISOString().split('T')[0];
+    return date > today;
+  };
+
   const getEntryForHabitAndDate = (habitId: string, date: string) => {
     return habitEntries.find(entry => entry.habit_id === habitId && entry.date === date);
   };
 
   const toggleHabit = (habitId: string, date: string) => {
+    // Prevent interaction with future dates
+    if (isFutureDate(date)) {
+      return;
+    }
+
     const entry = getEntryForHabitAndDate(habitId, date);
     const newCompleted = !entry?.completed;
     onUpdateEntry(habitId, date, newCompleted);
@@ -91,21 +101,26 @@ const WeeklyProgressView = ({ habits, habitEntries, onUpdateEntry }: WeeklyProgr
               const dateStr = formatDate(date);
               const entry = getEntryForHabitAndDate(habit.id, dateStr);
               const isCompleted = entry?.completed || false;
+              const isFuture = isFutureDate(dateStr);
               
               return (
                 <Card
                   key={`${habit.id}-${dateStr}`}
-                  className={`p-2 cursor-pointer transition-all hover:shadow-md ${
-                    isCompleted ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50'
+                  className={`p-2 transition-all ${
+                    isFuture 
+                      ? 'opacity-50 cursor-not-allowed bg-gray-100' 
+                      : `cursor-pointer hover:shadow-md ${
+                          isCompleted ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50'
+                        }`
                   }`}
-                  onClick={() => toggleHabit(habit.id, dateStr)}
+                  onClick={() => !isFuture && toggleHabit(habit.id, dateStr)}
                 >
                   <div className="text-center">
                     <div className="text-xs mb-1">{date.getDate()}</div>
                     {isCompleted ? (
                       <CheckCircle className="w-4 h-4 text-green-600 mx-auto" />
                     ) : (
-                      <Circle className="w-4 h-4 text-gray-400 mx-auto" />
+                      <Circle className={`w-4 h-4 mx-auto ${isFuture ? 'text-gray-300' : 'text-gray-400'}`} />
                     )}
                   </div>
                 </Card>
