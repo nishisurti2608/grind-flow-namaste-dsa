@@ -9,6 +9,9 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import ForgotPasswordModal from "@/components/ForgotPasswordModal";
+import { validateEmail, validatePassword, sanitizeInput } from '@/utils/validation';
+import { rateLimiter, RATE_LIMITS } from '@/utils/rateLimiter';
+import { handleSecureError } from '@/utils/errorHandler';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -43,22 +46,68 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
 
+    // Rate limiting check
+    if (!rateLimiter.isAllowed('auth_signup', email, RATE_LIMITS.AUTH_ATTEMPTS.maxAttempts, RATE_LIMITS.AUTH_ATTEMPTS.windowMs)) {
+      const remainingTime = rateLimiter.getRemainingTime('auth_signup', email);
+      toast({
+        title: "Too many attempts",
+        description: `Please wait ${Math.ceil(remainingTime / 60)} minutes before trying again.`,
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    // Validate inputs
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.isValid) {
+      toast({
+        title: "Invalid email",
+        description: emailValidation.error,
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      toast({
+        title: "Invalid password",
+        description: passwordValidation.error,
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    if (fullName.trim().length === 0) {
+      toast({
+        title: "Name required",
+        description: "Please enter your full name.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const { error } = await supabase.auth.signUp({
-        email,
+        email: email.trim(),
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
-            full_name: fullName,
+            full_name: sanitizeInput(fullName),
           }
         }
       });
 
       if (error) {
+        const secureError = handleSecureError(error, 'Auth.handleSignUp');
         toast({
           title: "Sign up failed",
-          description: error.message,
+          description: secureError.userMessage,
           variant: "destructive",
         });
       } else {
@@ -68,9 +117,10 @@ const Auth = () => {
         });
       }
     } catch (error) {
+      const secureError = handleSecureError(error, 'Auth.handleSignUp');
       toast({
         title: "Error",
-        description: "An unexpected error occurred",
+        description: secureError.userMessage,
         variant: "destructive",
       });
     } finally {
@@ -82,16 +132,41 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
 
+    // Rate limiting check
+    if (!rateLimiter.isAllowed('auth_signin', email, RATE_LIMITS.AUTH_ATTEMPTS.maxAttempts, RATE_LIMITS.AUTH_ATTEMPTS.windowMs)) {
+      const remainingTime = rateLimiter.getRemainingTime('auth_signin', email);
+      toast({
+        title: "Too many attempts",
+        description: `Please wait ${Math.ceil(remainingTime / 60)} minutes before trying again.`,
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    // Validate inputs
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.isValid) {
+      toast({
+        title: "Invalid email",
+        description: emailValidation.error,
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim(),
         password,
       });
 
       if (error) {
+        const secureError = handleSecureError(error, 'Auth.handleSignIn');
         toast({
           title: "Sign in failed",
-          description: error.message,
+          description: secureError.userMessage,
           variant: "destructive",
         });
       } else {
@@ -102,9 +177,10 @@ const Auth = () => {
         navigate('/');
       }
     } catch (error) {
+      const secureError = handleSecureError(error, 'Auth.handleSignIn');
       toast({
         title: "Error",
-        description: "An unexpected error occurred",
+        description: secureError.userMessage,
         variant: "destructive",
       });
     } finally {
@@ -116,15 +192,27 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
 
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.isValid) {
+      toast({
+        title: "Invalid password",
+        description: passwordValidation.error,
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
 
       if (error) {
+        const secureError = handleSecureError(error, 'Auth.handlePasswordReset');
         toast({
           title: "Password update failed",
-          description: error.message,
+          description: secureError.userMessage,
           variant: "destructive",
         });
       } else {
@@ -136,9 +224,10 @@ const Auth = () => {
         navigate('/');
       }
     } catch (error) {
+      const secureError = handleSecureError(error, 'Auth.handlePasswordReset');
       toast({
         title: "Error",
-        description: "An unexpected error occurred",
+        description: secureError.userMessage,
         variant: "destructive",
       });
     } finally {

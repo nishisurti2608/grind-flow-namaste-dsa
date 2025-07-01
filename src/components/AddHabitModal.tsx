@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Habit } from './Dashboard';
+import { validateHabitName, validateColor, sanitizeInput, ALLOWED_COLORS } from '@/utils/validation';
+import { rateLimiter, RATE_LIMITS } from '@/utils/rateLimiter';
+import { handleSecureError } from '@/utils/errorHandler';
+import { useToast } from "@/hooks/use-toast";
 
 interface AddHabitModalProps {
   open: boolean;
@@ -15,36 +19,86 @@ interface AddHabitModalProps {
 const AddHabitModal = ({ open, onClose, onAdd }: AddHabitModalProps) => {
   const [name, setName] = useState('');
   const [color, setColor] = useState('bg-indigo-500');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
-  const colors = [
-    { name: 'Indigo', value: 'bg-indigo-500' },
-    { name: 'Blue', value: 'bg-blue-500' },
-    { name: 'Emerald', value: 'bg-emerald-500' },
-    { name: 'Purple', value: 'bg-purple-500' },
-    { name: 'Pink', value: 'bg-pink-500' },
-    { name: 'Orange', value: 'bg-orange-500' },
-    { name: 'Red', value: 'bg-red-500' },
-    { name: 'Cyan', value: 'bg-cyan-500' },
-    { name: 'Yellow', value: 'bg-yellow-500' },
-    { name: 'Green', value: 'bg-green-500' },
-  ];
+  const colors = ALLOWED_COLORS.map(colorValue => ({
+    name: colorValue.replace('bg-', '').replace('-500', '').charAt(0).toUpperCase() + 
+          colorValue.replace('bg-', '').replace('-500', '').slice(1),
+    value: colorValue
+  }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name.trim()) return;
+    if (isSubmitting) return;
     
-    const habit: Omit<Habit, 'id'> = {
-      name: name.trim(),
-      color,
-    };
+    // Rate limiting check
+    if (!rateLimiter.isAllowed('habit_create', 'user', RATE_LIMITS.HABIT_OPERATIONS.maxAttempts, RATE_LIMITS.HABIT_OPERATIONS.windowMs)) {
+      const remainingTime = rateLimiter.getRemainingTime('habit_create', 'user');
+      toast({
+        title: "Too many requests",
+        description: `Please wait ${remainingTime} seconds before creating another habit.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate input
+    const nameValidation = validateHabitName(name);
+    if (!nameValidation.isValid) {
+      toast({
+        title: "Invalid habit name",
+        description: nameValidation.error,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const colorValidation = validateColor(color);
+    if (!colorValidation.isValid) {
+      toast({
+        title: "Invalid color",
+        description: colorValidation.error,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      const sanitizedName = sanitizeInput(name);
+      
+      const habit: Omit<Habit, 'id'> = {
+        name: sanitizedName,
+        color,
+      };
 
-    onAdd(habit);
-    
-    // Reset form
-    setName('');
-    setColor('bg-indigo-500');
-    onClose();
+      await onAdd(habit);
+      
+      // Reset form
+      setName('');
+      setColor('bg-indigo-500');
+      onClose();
+    } catch (error) {
+      const secureError = handleSecureError(error, 'AddHabitModal.handleSubmit');
+      toast({
+        title: "Error creating habit",
+        description: secureError.userMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Prevent input beyond max length
+    if (value.length <= 100) {
+      setName(value);
+    }
   };
 
   return (
@@ -64,11 +118,15 @@ const AddHabitModal = ({ open, onClose, onAdd }: AddHabitModalProps) => {
             <Input
               id="name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={handleNameChange}
               placeholder="e.g., Morning Exercise, Read for 30 minutes"
               className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
               required
+              maxLength={100}
             />
+            <div className="text-xs text-gray-500">
+              {name.length}/100 characters
+            </div>
           </div>
 
           <div className="space-y-3">
@@ -93,14 +151,16 @@ const AddHabitModal = ({ open, onClose, onAdd }: AddHabitModalProps) => {
               variant="outline" 
               onClick={onClose}
               className="border-gray-300 hover:bg-gray-50"
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
             <Button 
               type="submit" 
               className="bg-indigo-600 hover:bg-indigo-700 text-white"
+              disabled={isSubmitting}
             >
-              Create Habit
+              {isSubmitting ? 'Creating...' : 'Create Habit'}
             </Button>
           </div>
         </form>

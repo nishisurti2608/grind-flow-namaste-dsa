@@ -13,6 +13,9 @@ import EditHabitModal from './EditHabitModal';
 import OverallProgressView from './OverallProgressView';
 import DashboardStats from './DashboardStats';
 import DailyHistory from './DailyHistory';
+import { validateHabitName, validateSubtaskName, validateNotes, validateColor, sanitizeInput, validateDateEntry } from '@/utils/validation';
+import { rateLimiter, RATE_LIMITS } from '@/utils/rateLimiter';
+import { handleSecureError } from '@/utils/errorHandler';
 
 export interface Habit {
   id: string;
@@ -232,12 +235,115 @@ const Dashboard = () => {
     }
   };
 
+  const updateHabitEntry = async (habitId: string, date: string, completed: boolean, notes?: string) => {
+    // Enhanced date validation
+    const dateValidation = validateDateEntry(date);
+    if (!dateValidation.isValid) {
+      toast({
+        title: "Invalid date",
+        description: dateValidation.error,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Rate limiting check
+    if (!rateLimiter.isAllowed('habit_update', habitId, RATE_LIMITS.HABIT_OPERATIONS.maxAttempts, RATE_LIMITS.HABIT_OPERATIONS.windowMs)) {
+      const remainingTime = rateLimiter.getRemainingTime('habit_update', habitId);
+      toast({
+        title: "Too many updates",
+        description: `Please wait ${remainingTime} seconds before updating again.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate notes if provided
+    if (notes) {
+      const notesValidation = validateNotes(notes);
+      if (!notesValidation.isValid) {
+        toast({
+          title: "Invalid notes",
+          description: notesValidation.error,
+          variant: "destructive",
+        });
+        return;
+      }
+      notes = sanitizeInput(notes);
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('habit_entries')
+        .upsert({
+          habit_id: habitId,
+          date: date,
+          completed: completed,
+          notes: notes || null,
+          user_id: user?.id,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setHabitEntries(prev => {
+        const existing = prev.find(entry => entry.habit_id === habitId && entry.date === date);
+        if (existing) {
+          return prev.map(entry => 
+            entry.habit_id === habitId && entry.date === date 
+              ? { ...entry, completed, notes }
+              : entry
+          );
+        } else {
+          return [...prev, {
+            id: data.id,
+            habit_id: habitId,
+            date: date,
+            completed: completed,
+            notes: notes,
+          }];
+        }
+      });
+
+      // Check if all habits for today are completed after this update
+      const entryDate = new Date(date).toISOString().split('T')[0];
+      const today = new Date().toISOString().split('T')[0];
+      if (entryDate === today) {
+        checkAndAutoCompleteDay(date, habitId, completed);
+      }
+
+      toast({
+        title: completed ? "Great job!" : "Entry updated",
+        description: completed ? "You've completed this habit!" : "Your entry has been saved.",
+      });
+    } catch (error) {
+      const secureError = handleSecureError(error, 'Dashboard.updateHabitEntry');
+      toast({
+        title: "Error saving entry",
+        description: secureError.userMessage,
+        variant: "destructive",
+      });
+    }
+  };
+
   const addHabit = async (habitData: Omit<Habit, 'id'>) => {
+    // Validate input
+    const nameValidation = validateHabitName(habitData.name);
+    if (!nameValidation.isValid) {
+      throw new Error(nameValidation.error);
+    }
+
+    const colorValidation = validateColor(habitData.color);
+    if (!colorValidation.isValid) {
+      throw new Error(colorValidation.error);
+    }
+
     try {
       const { data, error } = await supabase
         .from('habits')
         .insert([{
-          name: habitData.name,
+          name: sanitizeInput(habitData.name),
           color: habitData.color,
           type: 'checkbox',
           user_id: user?.id,
@@ -260,41 +366,13 @@ const Dashboard = () => {
         description: `${habitData.name} has been added to your habits.`,
       });
     } catch (error) {
+      const secureError = handleSecureError(error, 'Dashboard.addHabit');
       toast({
         title: "Error creating habit",
-        description: "Could not create your habit. Please try again.",
+        description: secureError.userMessage,
         variant: "destructive",
       });
-    }
-  };
-
-  const updateHabit = async (habitId: string, updates: Partial<Habit>) => {
-    try {
-      const { error } = await supabase
-        .from('habits')
-        .update(updates)
-        .eq('id', habitId);
-
-      if (error) throw error;
-
-      setHabits(habits.map(habit => 
-        habit.id === habitId ? { ...habit, ...updates } : habit
-      ));
-
-      if (selectedHabit?.id === habitId) {
-        setSelectedHabit({ ...selectedHabit, ...updates });
-      }
-
-      toast({
-        title: "Habit updated!",
-        description: "Your habit has been updated successfully.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error updating habit",
-        description: "Could not update your habit. Please try again.",
-        variant: "destructive",
-      });
+      throw error; // Re-throw for modal handling
     }
   };
 
@@ -324,12 +402,34 @@ const Dashboard = () => {
   };
 
   const addSubtask = async (habitId: string, subtaskName: string) => {
+    // Validate input
+    const nameValidation = validateSubtaskName(subtaskName);
+    if (!nameValidation.isValid) {
+      toast({
+        title: "Invalid subtask name",
+        description: nameValidation.error,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Rate limiting check
+    if (!rateLimiter.isAllowed('subtask_create', habitId, RATE_LIMITS.HABIT_OPERATIONS.maxAttempts, RATE_LIMITS.HABIT_OPERATIONS.windowMs)) {
+      const remainingTime = rateLimiter.getRemainingTime('subtask_create', habitId);
+      toast({
+        title: "Too many requests",
+        description: `Please wait ${remainingTime} seconds before adding another subtask.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('subtasks')
         .insert([{
           habit_id: habitId,
-          name: subtaskName,
+          name: sanitizeInput(subtaskName),
           user_id: user?.id,
         }])
         .select()
@@ -351,9 +451,10 @@ const Dashboard = () => {
         description: "New subtask has been added.",
       });
     } catch (error) {
+      const secureError = handleSecureError(error, 'Dashboard.addSubtask');
       toast({
         title: "Error adding subtask",
-        description: "Could not add subtask. Please try again.",
+        description: secureError.userMessage,
         variant: "destructive",
       });
     }
@@ -399,82 +500,6 @@ const Dashboard = () => {
       toast({
         title: "Error deleting subtask",
         description: "Could not delete subtask. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const updateHabitEntry = async (habitId: string, date: string, completed: boolean, notes?: string) => {
-    // Check if the date is today (only allow editing today's entries)
-    const today = new Date().toISOString().split('T')[0];
-    const entryDate = new Date(date).toISOString().split('T')[0];
-    
-    if (entryDate < today) {
-      toast({
-        title: "Cannot edit past entries",
-        description: "You can only edit today's entries. Past entries are locked.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Prevent marking future dates
-    if (entryDate > today) {
-      toast({
-        title: "Cannot mark future dates",
-        description: "You cannot mark future dates as complete.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('habit_entries')
-        .upsert({
-          habit_id: habitId,
-          date: date,
-          completed: completed,
-          notes: notes || null,
-          user_id: user?.id,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setHabitEntries(prev => {
-        const existing = prev.find(entry => entry.habit_id === habitId && entry.date === date);
-        if (existing) {
-          return prev.map(entry => 
-            entry.habit_id === habitId && entry.date === date 
-              ? { ...entry, completed, notes }
-              : entry
-          );
-        } else {
-          return [...prev, {
-            id: data.id,
-            habit_id: habitId,
-            date: date,
-            completed: completed,
-            notes: notes,
-          }];
-        }
-      });
-
-      // Check if all habits for today are completed after this update
-      if (entryDate === today) {
-        checkAndAutoCompleteDay(date, habitId, completed);
-      }
-
-      toast({
-        title: completed ? "Great job!" : "Entry updated",
-        description: completed ? "You've completed this habit!" : "Your entry has been saved.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error saving entry",
-        description: "Could not save your habit entry. Please try again.",
         variant: "destructive",
       });
     }
