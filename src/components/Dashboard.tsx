@@ -376,6 +376,63 @@ const Dashboard = () => {
     }
   };
 
+  const updateHabit = async (habitId: string, updates: Partial<Habit>) => {
+    // Validate updates
+    if (updates.name) {
+      const nameValidation = validateHabitName(updates.name);
+      if (!nameValidation.isValid) {
+        toast({
+          title: "Invalid habit name",
+          description: nameValidation.error,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    if (updates.color) {
+      const colorValidation = validateColor(updates.color);
+      if (!colorValidation.isValid) {
+        toast({
+          title: "Invalid color",
+          description: colorValidation.error,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    try {
+      const { error } = await supabase
+        .from('habits')
+        .update({
+          name: updates.name ? sanitizeInput(updates.name) : undefined,
+          color: updates.color,
+        })
+        .eq('id', habitId);
+
+      if (error) throw error;
+
+      setHabits(habits.map(habit => 
+        habit.id === habitId 
+          ? { ...habit, ...updates }
+          : habit
+      ));
+      
+      toast({
+        title: "Habit updated!",
+        description: "Your habit has been updated successfully.",
+      });
+    } catch (error) {
+      const secureError = handleSecureError(error, 'Dashboard.updateHabit');
+      toast({
+        title: "Error updating habit",
+        description: secureError.userMessage,
+        variant: "destructive",
+      });
+    }
+  };
+
   const deleteHabit = async (habitId: string) => {
     try {
       const { error } = await supabase
