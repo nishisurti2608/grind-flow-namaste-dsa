@@ -28,9 +28,14 @@ const CalendarView = ({ habit, entries, onUpdateEntry }: CalendarViewProps) => {
     return date > today;
   };
 
+  const isPastDate = (date: string) => {
+    const today = new Date().toISOString().split('T')[0];
+    return date < today;
+  };
+
   const toggleHabit = (date: string) => {
-    // Prevent interaction with future dates
-    if (isFutureDate(date)) {
+    // Prevent interaction with future dates and past dates (past dates are view-only)
+    if (isFutureDate(date) || isPastDate(date)) {
       return;
     }
 
@@ -91,6 +96,8 @@ const CalendarView = ({ habit, entries, onUpdateEntry }: CalendarViewProps) => {
             const entry = getEntryForDate(dateStr);
             const isCompleted = entry?.completed || false;
             const isFuture = isFutureDate(dateStr);
+            const isPast = isPastDate(dateStr);
+            const isToday = !isFuture && !isPast;
             
             return (
               <Card
@@ -98,11 +105,13 @@ const CalendarView = ({ habit, entries, onUpdateEntry }: CalendarViewProps) => {
                 className={`p-4 transition-all ${
                   isFuture 
                     ? 'opacity-50 cursor-not-allowed bg-gray-100' 
+                    : isPast
+                    ? `${isCompleted ? 'bg-green-50 border-green-200' : 'bg-gray-50'} cursor-default`
                     : `cursor-pointer hover:shadow-md ${
                         isCompleted ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50'
                       }`
                 }`}
-                onClick={() => !isFuture && toggleHabit(dateStr)}
+                onClick={() => isToday && toggleHabit(dateStr)}
               >
                 <div className="text-center">
                   <div className="text-sm font-medium mb-2">{date.getDate()}</div>
@@ -186,6 +195,8 @@ const CalendarView = ({ habit, entries, onUpdateEntry }: CalendarViewProps) => {
             const entry = getEntryForDate(dateStr);
             const isCompleted = entry?.completed || false;
             const isFuture = isFutureDate(dateStr);
+            const isPast = isPastDate(dateStr);
+            const isToday = !isFuture && !isPast;
             
             return (
               <Card
@@ -193,11 +204,13 @@ const CalendarView = ({ habit, entries, onUpdateEntry }: CalendarViewProps) => {
                 className={`p-2 transition-all ${
                   isFuture 
                     ? 'opacity-50 cursor-not-allowed bg-gray-100' 
+                    : isPast
+                    ? `${isCompleted ? 'bg-green-50 border-green-200' : 'bg-gray-50'} cursor-default`
                     : `cursor-pointer hover:shadow-md ${
                         isCompleted ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50'
                       }`
                 }`}
-                onClick={() => !isFuture && toggleHabit(dateStr)}
+                onClick={() => isToday && toggleHabit(dateStr)}
               >
                 <div className="text-center">
                   <div className="text-sm font-medium mb-1">{date.getDate()}</div>

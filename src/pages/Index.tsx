@@ -92,13 +92,6 @@ const Index = () => {
                 Start Your Journey
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="border-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50 px-8 py-4 text-lg"
-              >
-                Watch Demo
-              </Button>
             </div>
           </div>
         </div>
@@ -296,7 +289,7 @@ const Index = () => {
             <p className="mb-4">
               Built for developers, by developers. Level up your coding skills one day at a time.
             </p>
-            <p>&copy; 2024 Grind Flow. All rights reserved.</p>
+            <p>&copy; 2025 Grind Flow. All rights reserved.</p>
           </div>
         </div>
       </footer>
