@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, User, Mail, Save } from "lucide-react";
+import { ArrowLeft, User, Mail, Save, Trophy } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import AchievementGrid from './AchievementGrid';
+import { useAchievements } from '@/hooks/useAchievements';
 
 interface ProfileSettingsProps {
   onBack: () => void;
@@ -16,18 +18,61 @@ interface ProfileSettingsProps {
 const ProfileSettings = ({ onBack }: ProfileSettingsProps) => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const { achievements, calculateCurrentStreak } = useAchievements();
   const [profile, setProfile] = useState({
     full_name: '',
     email: user?.email || '',
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [currentStreak, setCurrentStreak] = useState(0);
+  const [totalHabits, setTotalHabits] = useState(0);
+  const [daysTracked, setDaysTracked] = useState(0);
+  const [completionRate, setCompletionRate] = useState(0);
 
   useEffect(() => {
     if (user) {
       fetchProfile();
+      loadStats();
     }
   }, [user]);
+
+  const loadStats = async () => {
+    if (!user) return;
+    
+    try {
+      // Calculate current streak
+      const streak = await calculateCurrentStreak();
+      setCurrentStreak(streak);
+
+      // Get total habits
+      const { data: habits, error: habitsError } = await supabase
+        .from('habits')
+        .select('id')
+        .eq('user_id', user.id);
+
+      if (habitsError) throw habitsError;
+      setTotalHabits(habits?.length || 0);
+
+      // Get total days tracked and completion rate
+      const { data: entries, error: entriesError } = await supabase
+        .from('habit_entries')
+        .select('date, completed')
+        .eq('user_id', user.id);
+
+      if (entriesError) throw entriesError;
+
+      const uniqueDates = new Set(entries?.map(e => e.date) || []);
+      setDaysTracked(uniqueDates.size);
+
+      const totalEntries = entries?.length || 0;
+      const completedEntries = entries?.filter(e => e.completed).length || 0;
+      const rate = totalEntries > 0 ? Math.round((completedEntries / totalEntries) * 100) : 0;
+      setCompletionRate(rate);
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    }
+  };
 
   const fetchProfile = async () => {
     try {
@@ -198,20 +243,35 @@ const ProfileSettings = ({ onBack }: ProfileSettingsProps) => {
           <Card className="p-6">
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-900">Account Statistics</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <div className="text-2xl font-bold text-purple-600">--</div>
+                  <div className="text-2xl font-bold text-purple-600">{totalHabits}</div>
                   <div className="text-sm text-gray-600">Total Habits</div>
                 </div>
                 <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">--</div>
+                  <div className="text-2xl font-bold text-blue-600">{daysTracked}</div>
                   <div className="text-sm text-gray-600">Days Tracked</div>
                 </div>
                 <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">--</div>
+                  <div className="text-2xl font-bold text-green-600">{completionRate}%</div>
                   <div className="text-sm text-gray-600">Completion Rate</div>
                 </div>
+                <div className="text-center p-4 bg-orange-50 rounded-lg">
+                  <div className="text-2xl font-bold text-orange-600">{currentStreak}</div>
+                  <div className="text-sm text-gray-600">Current Streak</div>
+                </div>
               </div>
+            </div>
+          </Card>
+
+          {/* Achievements */}
+          <Card className="p-6">
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <Trophy className="w-6 h-6 text-yellow-600" />
+                <h3 className="text-lg font-semibold text-gray-900">Achievements</h3>
+              </div>
+              <AchievementGrid currentStreak={currentStreak} />
             </div>
           </Card>
         </div>

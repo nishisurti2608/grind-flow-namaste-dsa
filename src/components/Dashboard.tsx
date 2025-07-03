@@ -16,6 +16,7 @@ import DailyHistory from './DailyHistory';
 import { validateHabitName, validateSubtaskName, validateNotes, validateColor, sanitizeInput, validateDateEntry } from '@/utils/validation';
 import { rateLimiter, RATE_LIMITS } from '@/utils/rateLimiter';
 import { handleSecureError } from '@/utils/errorHandler';
+import { useAchievements } from '@/hooks/useAchievements';
 
 export interface Habit {
   id: string;
@@ -46,6 +47,7 @@ interface UserProfile {
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const { checkAndAwardAchievements } = useAchievements();
   const [habits, setHabits] = useState<Habit[]>([]);
   const [habitEntries, setHabitEntries] = useState<HabitEntry[]>([]);
   const [subtasks, setSubtasks] = useState<Subtask[]>([]);
@@ -312,6 +314,9 @@ const Dashboard = () => {
       if (entryDate === today) {
         checkAndAutoCompleteDay(date, habitId, completed);
       }
+
+      // Check for achievements after updating entry
+      await checkAndAwardAchievements();
 
       toast({
         title: completed ? "Great job!" : "Entry updated",

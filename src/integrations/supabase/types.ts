@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          badge_color: string
+          badge_description: string | null
+          badge_name: string
+          created_at: string
+          earned_at: string
+          element_type: string
+          id: string
+          milestone_days: number
+          user_id: string
+        }
+        Insert: {
+          badge_color: string
+          badge_description?: string | null
+          badge_name: string
+          created_at?: string
+          earned_at?: string
+          element_type: string
+          id?: string
+          milestone_days: number
+          user_id: string
+        }
+        Update: {
+          badge_color?: string
+          badge_description?: string | null
+          badge_name?: string
+          created_at?: string
+          earned_at?: string
+          element_type?: string
+          id?: string
+          milestone_days?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_history: {
         Row: {
           completed_tasks: number
@@ -201,7 +237,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      check_and_award_achievements: {
+        Args: { user_uuid: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
