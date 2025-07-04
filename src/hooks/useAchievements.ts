@@ -85,7 +85,7 @@ export const useAchievements = () => {
 
       const signupDate = profile.created_at;
       
-      // Calculate consecutive days from habit entries
+      // Calculate consecutive days from habit entries (including orphaned entries with NULL habit_id)
       const { data, error } = await supabase
         .from('habit_entries')
         .select('date, completed')
