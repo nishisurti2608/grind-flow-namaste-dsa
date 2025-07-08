@@ -44,10 +44,10 @@ const DashboardFooter = () => {
           </div>
         </div>
         
-        <div className="border-t border-gray-200 mt-8 pt-6 flex items-center justify-between">
-          <p className="text-xs text-gray-500">
-            © 2024 Grind Flow. Built with passion for developers.
-          </p>
+          <div className="border-t border-gray-200 mt-8 pt-6 flex items-center justify-between">
+            <p className="text-xs text-gray-500">
+              © 2025 Grind Flow. Built with passion for developers.
+            </p>
           <div className="text-xs text-gray-500">
             Made with ❤️ for the coding community
           </div>
