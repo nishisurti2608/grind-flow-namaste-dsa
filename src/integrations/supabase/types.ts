@@ -89,6 +89,33 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_medals: {
+        Row: {
+          created_at: string
+          earned_date: string
+          id: string
+          medal_type: string
+          streak_count: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          earned_date: string
+          id?: string
+          medal_type: string
+          streak_count: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          earned_date?: string
+          id?: string
+          medal_type?: string
+          streak_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       habit_entries: {
         Row: {
           completed: boolean | null
