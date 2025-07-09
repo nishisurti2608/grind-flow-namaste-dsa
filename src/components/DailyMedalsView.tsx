@@ -42,7 +42,7 @@ const DailyMedalsView = () => {
         .order('earned_date', { ascending: false });
 
       if (error) throw error;
-      setMedals(data || []);
+      setMedals((data || []) as DailyMedal[]);
     } catch (error) {
       console.error('Error fetching medals:', error);
     }
@@ -131,7 +131,7 @@ const DailyMedalsView = () => {
 
             if (error) throw error;
 
-            setMedals(prev => [data, ...prev]);
+            setMedals(prev => [data as DailyMedal, ...prev]);
             toast({
               title: "🏆 New Medal Earned!",
               description: `Congratulations! You've earned a ${threshold.type} medal for ${threshold.days} days streak!`,

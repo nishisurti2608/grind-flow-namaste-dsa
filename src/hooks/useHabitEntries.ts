@@ -38,7 +38,7 @@ export const useHabitEntries = (habits: Habit[]) => {
     }
   };
 
-  const checkAndAutoCompleteDay = async (date: string, updatedHabitId: string, updatedCompleted: boolean) => {
+  const checkAndAutoCompleteDay = async (date: string, updatedHabitId: string, updatedCompleted: boolean, onDayCompleted?: () => void) => {
     try {
       // Get all habits for the user
       const allHabits = habits;
@@ -66,7 +66,12 @@ export const useHabitEntries = (habits: Habit[]) => {
         completionMap.get(habit.id) === true
       );
 
-      if (allCompleted && allHabits.length > 0) {
+      if (allCompleted && allHabits.length > 0 && updatedCompleted) {
+        // Call the celebration callback if provided
+        if (onDayCompleted) {
+          onDayCompleted();
+        }
+        
         toast({
           title: "🎉 Day Completed!",
           description: "Congratulations! You've completed all your habits for today!",
@@ -77,7 +82,7 @@ export const useHabitEntries = (habits: Habit[]) => {
     }
   };
 
-  const updateHabitEntry = async (habitId: string, date: string, completed: boolean, notes?: string) => {
+  const updateHabitEntry = async (habitId: string, date: string, completed: boolean, notes?: string, onDayCompleted?: () => void) => {
     // Enhanced date validation
     const dateValidation = validateDateEntry(date);
     if (!dateValidation.isValid) {
@@ -152,7 +157,7 @@ export const useHabitEntries = (habits: Habit[]) => {
       const entryDate = new Date(date).toISOString().split('T')[0];
       const today = new Date().toISOString().split('T')[0];
       if (entryDate === today) {
-        checkAndAutoCompleteDay(date, habitId, completed);
+        checkAndAutoCompleteDay(date, habitId, completed, onDayCompleted);
       }
 
       // Check for achievements after updating entry

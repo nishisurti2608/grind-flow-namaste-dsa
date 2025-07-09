@@ -11,6 +11,7 @@ import DailyHistory from './DailyHistory';
 import TaskCommitTimeline from './TaskCommitTimeline';
 import DashboardHeader from './DashboardHeader';
 import DashboardFooter from './DashboardFooter';
+import DayCompletionCelebration from './DayCompletionCelebration';
 import { useHabits } from '@/hooks/useHabits';
 import { useSubtasks } from '@/hooks/useSubtasks';
 import { useHabitEntries } from '@/hooks/useHabitEntries';
@@ -35,6 +36,8 @@ const Dashboard = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingHabit, setEditingHabit] = useState<typeof habits[0] | null>(null);
   const [viewMode, setViewMode] = useState<'individual' | 'overall' | 'history' | 'commits'>('individual');
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [currentStreak, setCurrentStreak] = useState(0);
 
   // Auto-select first habit when habits change
   useEffect(() => {
@@ -47,6 +50,47 @@ const Dashboard = () => {
       setSelectedHabit(habits[0]);
     }
   }, [habits, selectedHabit]);
+
+  // Calculate current streak
+  useEffect(() => {
+    const calculateStreak = async () => {
+      if (habitEntries.length === 0) return;
+      
+      const today = new Date().toISOString().split('T')[0];
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      
+      // Group entries by date
+      const dailyCompletions = habitEntries.reduce((acc, entry) => {
+        if (!acc[entry.date]) acc[entry.date] = { total: 0, completed: 0 };
+        acc[entry.date].total++;
+        if (entry.completed) acc[entry.date].completed++;
+        return acc;
+      }, {} as Record<string, { total: number; completed: number }>);
+
+      let streak = 0;
+      let checkDate = dailyCompletions[today] ? today : yesterday;
+      
+      while (checkDate && dailyCompletions[checkDate]) {
+        const dayData = dailyCompletions[checkDate];
+        if (dayData.completed === dayData.total && dayData.total > 0) {
+          streak++;
+          const prevDate = new Date(checkDate);
+          prevDate.setDate(prevDate.getDate() - 1);
+          checkDate = prevDate.toISOString().split('T')[0];
+        } else {
+          break;
+        }
+      }
+      
+      setCurrentStreak(streak);
+    };
+    
+    calculateStreak();
+  }, [habitEntries]);
+
+  const handleDayCompleted = () => {
+    setShowCelebration(true);
+  };
 
   if (loading) {
     return (
@@ -160,14 +204,18 @@ const Dashboard = () => {
                       <HeatmapCalendar
                         habit={selectedHabit}
                         entries={habitEntries.filter(entry => entry.habit_id === selectedHabit.id)}
-                        onUpdateEntry={updateHabitEntry}
+                        onUpdateEntry={(habitId, date, completed, notes) => 
+                          updateHabitEntry(habitId, date, completed, notes, handleDayCompleted)
+                        }
                       />
                     </div>
                   ) : viewMode === 'overall' ? (
                     <OverallProgressView
                       habits={habits}
                       habitEntries={habitEntries}
-                      onUpdateEntry={updateHabitEntry}
+                      onUpdateEntry={(habitId, date, completed, notes) => 
+                        updateHabitEntry(habitId, date, completed, notes, handleDayCompleted)
+                      }
                     />
                   ) : viewMode === 'history' ? (
                     <DailyHistory />
@@ -197,6 +245,12 @@ const Dashboard = () => {
         habit={editingHabit}
         onClose={() => setEditingHabit(null)}
         onUpdate={updateHabit}
+      />
+
+      <DayCompletionCelebration
+        isOpen={showCelebration}
+        onClose={() => setShowCelebration(false)}
+        currentStreak={currentStreak}
       />
     </div>
   );
