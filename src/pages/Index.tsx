@@ -6,10 +6,16 @@ import { CheckCircle, TrendingUp, Calendar, BarChart3, Users, Shield, ArrowRight
 import { useAuth } from "@/contexts/AuthContext";
 import Dashboard from "@/components/Dashboard";
 import Auth from "./Auth";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const { user, loading } = useAuth();
   const [showAuth, setShowAuth] = useState(false);
+  const navigate = useNavigate()
+
+  const onSignUp = () => {
+    navigate("/auth")
+  }
 
   if (loading) {
     return (
@@ -49,13 +55,13 @@ const Index = () => {
             <div className="flex items-center space-x-4">
               <Button 
                 variant="ghost" 
-                onClick={() => setShowAuth(true)}
+                onClick={onSignUp}
                 className="text-gray-700 hover:text-indigo-600"
               >
                 Sign In
               </Button>
               <Button 
-                onClick={() => setShowAuth(true)}
+                onClick={onSignUp}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 Get Started
