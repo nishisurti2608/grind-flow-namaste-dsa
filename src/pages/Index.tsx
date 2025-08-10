@@ -95,7 +95,7 @@ const Index = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
-                onClick={() => setShowAuth(true)}
+                onClick={onSignUp}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 md:text-lg text-base shadow-xl hover:shadow-2xl transition-all duration-200 transform hover:-translate-y-1"
               >
                 Start Your Journey
