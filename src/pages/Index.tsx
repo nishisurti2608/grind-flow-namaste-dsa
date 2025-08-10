@@ -2,14 +2,20 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, TrendingUp, Calendar, BarChart3, Users, Shield, ArrowRight } from "lucide-react";
+import { CheckCircle, TrendingUp, Calendar, BarChart3, Users, Shield, ArrowRight,MenuIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import Dashboard from "@/components/Dashboard";
 import Auth from "./Auth";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const { user, loading } = useAuth();
   const [showAuth, setShowAuth] = useState(false);
+  const navigate = useNavigate()
+
+  const onSignUp = () => {
+    navigate("/auth")
+  }
 
   if (loading) {
     return (
@@ -40,28 +46,31 @@ const Index = () => {
                 className="w-10 h-10 object-contain"
               />
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                <h1 className="md:text-2xl text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                   Grind Flow
                 </h1>
-                <p className="text-sm text-gray-600">Level up your dev skills daily</p>
+                <p className="md:text-sm text-xs text-gray-600">Level up your dev skills daily</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
               <Button 
                 variant="ghost" 
-                onClick={() => setShowAuth(true)}
-                className="text-gray-700 hover:text-indigo-600"
+                onClick={onSignUp}
+                className="md:text-gray-700 border rounded-lg text-indigo-500 md:hover:text-indigo-600"
               >
                 Sign In
               </Button>
               <Button 
-                onClick={() => setShowAuth(true)}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                onClick={onSignUp}
+                className="hidden md:flex bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 Get Started
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
+            {/* <button className="w-8">
+              <MenuIcon size={"100%"}/>
+            </button> */}
           </div>
         </div>
       </header>
@@ -73,21 +82,21 @@ const Index = () => {
             <Badge variant="secondary" className="mb-6 bg-indigo-100 text-indigo-700 border-indigo-200">
               For Developer Productivity
             </Badge>
-            <h2 className="text-5xl font-bold text-gray-900 mb-6 leading-tight">
+            <h2 className="md:text-5xl text-3xl font-bold text-gray-900 mb-6 leading-tight">
               Build Your Coding Skills
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
                 One Day at a Time
               </span>
             </h2>
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+            <p className="md:text-xl text-md text-gray-600 mb-8 leading-relaxed text-pretty md:text-center">
               Track your daily coding habits, master data structures & algorithms, 
               work on projects, and level up your development skills with our beautiful habit tracker.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
-                onClick={() => setShowAuth(true)}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 text-lg shadow-xl hover:shadow-2xl transition-all duration-200 transform hover:-translate-y-1"
+                onClick={onSignUp}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 md:text-lg text-base shadow-xl hover:shadow-2xl transition-all duration-200 transform hover:-translate-y-1"
               >
                 Start Your Journey
                 <ArrowRight className="w-5 h-5 ml-2" />
