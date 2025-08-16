@@ -28,7 +28,7 @@ const Dashboard = () => {
   const { subtasks, addSubtask, updateSubtask, deleteSubtask } = useSubtasks();
   const { habitEntries, updateHabitEntry } = useHabitEntries(habits);
   const { userProfile } = useUserProfile();
-  
+
   // Initialize daily archive functionality
   useDailyArchive(habits);
 
@@ -55,10 +55,10 @@ const Dashboard = () => {
   useEffect(() => {
     const calculateStreak = async () => {
       if (habitEntries.length === 0) return;
-      
+
       const today = new Date().toISOString().split('T')[0];
       const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-      
+
       // Group entries by date
       const dailyCompletions = habitEntries.reduce((acc, entry) => {
         if (!acc[entry.date]) acc[entry.date] = { total: 0, completed: 0 };
@@ -69,7 +69,7 @@ const Dashboard = () => {
 
       let streak = 0;
       let checkDate = dailyCompletions[today] ? today : yesterday;
-      
+
       while (checkDate && dailyCompletions[checkDate]) {
         const dayData = dailyCompletions[checkDate];
         if (dayData.completed === dayData.total && dayData.total > 0) {
@@ -81,10 +81,10 @@ const Dashboard = () => {
           break;
         }
       }
-      
+
       setCurrentStreak(streak);
     };
-    
+
     calculateStreak();
   }, [habitEntries]);
 
@@ -102,12 +102,12 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      <DashboardHeader 
+      <DashboardHeader
         userProfile={userProfile}
         onAddHabit={() => setShowAddModal(true)}
       />
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto md:px-6 md:py-8 p-4">
         {habits.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -117,7 +117,7 @@ const Dashboard = () => {
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
               Create your first habit to start tracking your progress and building better routines.
             </p>
-            <Button 
+            <Button
               onClick={() => setShowAddModal(true)}
               className="bg-indigo-600 hover:bg-indigo-700 text-white"
             >
@@ -129,11 +129,11 @@ const Dashboard = () => {
           <div>
             {/* Dashboard Stats */}
             <DashboardStats habits={habits} habitEntries={habitEntries} />
-            
-            <div className="grid lg:grid-cols-4 gap-8">
+
+            <div className="lg:grid grid-cols-4 gap-8">
               {/* Sidebar */}
               <div className="lg:col-span-1">
-                <HabitList 
+                <HabitList
                   habits={habits}
                   subtasks={subtasks}
                   selectedHabit={selectedHabit}
@@ -148,14 +148,14 @@ const Dashboard = () => {
 
               {/* Main Content */}
               <div className="lg:col-span-3">
-                <div className="bg-white rounded-xl border border-gray-200 p-6">
-                  <div className="flex items-center justify-between mb-6">
+                <div className="bg-white rounded-xl border border-gray-200 md:p-6 p-3 w-full overflow-hidden">
+                  <div className="md:flex items-center space-y-4 md:space-y-0 justify-between mb-6">
                     <div className="flex items-center space-x-3">
                       <h2 className="text-2xl font-bold text-gray-900">
                         Progress Tracking
                       </h2>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="grid grid-cols-2 md:grid-cols-4 items-center gap-2">
                       <Button
                         variant={viewMode === 'individual' ? 'default' : 'outline'}
                         size="sm"
@@ -189,22 +189,23 @@ const Dashboard = () => {
 
                   {viewMode === 'individual' && selectedHabit ? (
                     <div>
-                      <div className="flex items-center space-x-3 mb-6">
+                      <div className="flex items-center space-x-3 mb-6 w-full">
                         <div className={`w-4 h-4 rounded-full ${selectedHabit.color}`}></div>
-                        <div>
-                          <h3 className="text-xl font-semibold text-gray-900">
-                            {selectedHabit.name}
-                          </h3>
-                          <p className="text-gray-600">
-                            Track your progress and build consistency
-                          </p>
-                        </div>
+                          <div className="overflow-hidden w-full">
+                            <div className="text-xl font-semibold text-gray-900 truncate">
+                              {selectedHabit.name}
+                            </div>
+                            <p className="text-gray-600">
+                              Track your progress and build consistency
+                            </p>
+                          </div>
+
                       </div>
 
                       <HeatmapCalendar
                         habit={selectedHabit}
                         entries={habitEntries.filter(entry => entry.habit_id === selectedHabit.id)}
-                        onUpdateEntry={(habitId, date, completed, notes) => 
+                        onUpdateEntry={(habitId, date, completed, notes) =>
                           updateHabitEntry(habitId, date, completed, notes, handleDayCompleted)
                         }
                       />
@@ -213,7 +214,7 @@ const Dashboard = () => {
                     <OverallProgressView
                       habits={habits}
                       habitEntries={habitEntries}
-                      onUpdateEntry={(habitId, date, completed, notes) => 
+                      onUpdateEntry={(habitId, date, completed, notes) =>
                         updateHabitEntry(habitId, date, completed, notes, handleDayCompleted)
                       }
                     />
