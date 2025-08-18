@@ -17,6 +17,7 @@ import { useSubtasks } from '@/hooks/useSubtasks';
 import { useHabitEntries } from '@/hooks/useHabitEntries';
 import { useDailyArchive } from '@/hooks/useDailyArchive';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import DashboardLoadingSkeleton from './customUi/Skeleton/DashboardSkeleton';
 
 // Export types for other components to use
 export type { Habit } from '@/hooks/useHabits';
@@ -94,9 +95,7 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center font-sans">
-        <div className="text-lg text-gray-600">Loading your habits...</div>
-      </div>
+      <DashboardLoadingSkeleton/>
     );
   }
 
