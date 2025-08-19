@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,7 +11,10 @@ interface CalendarViewProps {
   onUpdateEntry: (habitId: string, date: string, completed: boolean, notes?: string) => void;
 }
 
+const DAYS: string[] = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
 const CalendarView = ({ habit, entries, onUpdateEntry }: CalendarViewProps) => {
+  const scrollContainer = useRef(null)
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
@@ -65,6 +68,10 @@ const CalendarView = ({ habit, entries, onUpdateEntry }: CalendarViewProps) => {
               const newDate = new Date(currentDate);
               newDate.setDate(currentDate.getDate() - 7);
               setCurrentDate(newDate);
+              scrollContainer.current.scrollTo({
+                left: 0,
+                behavior: "smooth", // optional: smooth animation
+              });
             }}
           >
             <ChevronLeft className="w-4 h-4" />
@@ -79,51 +86,67 @@ const CalendarView = ({ habit, entries, onUpdateEntry }: CalendarViewProps) => {
               const newDate = new Date(currentDate);
               newDate.setDate(currentDate.getDate() + 7);
               setCurrentDate(newDate);
+              scrollContainer.current.scrollTo({
+                left: 0,
+                behavior: "smooth", // optional: smooth animation
+              });
             }}
           >
             <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
         
-        <div className="grid grid-cols-7 gap-2">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="text-center text-sm font-medium text-gray-500 p-2">
-              {day}
+        <div className="flex flex-col">
+          {/* Fixed day headers */}
+          {/* <div className="grid grid-cols-7 gap-2">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+              <div key={day} className="text-center text-sm font-medium text-gray-500 p-2">
+                {day}
+              </div>
+            ))}
+          </div> */}
+
+          {/* Scrollable dates container */}
+          <div className="">
+            <div ref={scrollContainer} className="flex gap-2 justify-between w-full overflow-x-auto"> {/* min-w-max ensures grid doesn't shrink */}
+              {weekDates.map((date,i) => {
+                const dateStr = formatDate(date);
+                const entry = getEntryForDate(dateStr);
+                const isCompleted = entry?.completed || false;
+                const isFuture = isFutureDate(dateStr);
+                const isPast = isPastDate(dateStr);
+                const isToday = !isFuture && !isPast;
+
+                return (
+                  <div>
+                    <div key={DAYS[i]} className="text-center text-sm font-medium text-gray-500 p-2">
+                      {DAYS[i]}
+                    </div>
+                    <Card
+                      key={dateStr}
+                      className={`p-4 transition-all min-w-20 w-full px-4 ${isFuture
+                          ? 'opacity-50 cursor-not-allowed bg-gray-100'
+                          : isPast
+                            ? `${isCompleted ? 'bg-green-50 border-green-200' : 'bg-gray-50'} cursor-default`
+                            : `cursor-pointer hover:shadow-md ${isCompleted ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50'
+                            }`
+                        }`}
+                      onClick={() => isToday && toggleHabit(dateStr)}
+                    >
+                      <div className="text-center">
+                        <div className="text-sm font-medium mb-2">{date.getDate()}</div>
+                        {isCompleted ? (
+                          <CheckCircle className="w-6 h-6 text-green-600 mx-auto" />
+                        ) : (
+                          <Circle className={`w-6 h-6 mx-auto ${isFuture ? 'text-gray-300' : 'text-gray-400'}`} />
+                        )}
+                      </div>
+                    </Card>
+                  </div>
+                );
+              })}
             </div>
-          ))}
-          {weekDates.map(date => {
-            const dateStr = formatDate(date);
-            const entry = getEntryForDate(dateStr);
-            const isCompleted = entry?.completed || false;
-            const isFuture = isFutureDate(dateStr);
-            const isPast = isPastDate(dateStr);
-            const isToday = !isFuture && !isPast;
-            
-            return (
-              <Card
-                key={dateStr}
-                className={`p-4 transition-all ${
-                  isFuture 
-                    ? 'opacity-50 cursor-not-allowed bg-gray-100' 
-                    : isPast
-                    ? `${isCompleted ? 'bg-green-50 border-green-200' : 'bg-gray-50'} cursor-default`
-                    : `cursor-pointer hover:shadow-md ${
-                        isCompleted ? 'bg-green-50 border-green-200' : 'hover:bg-gray-50'
-                      }`
-                }`}
-                onClick={() => isToday && toggleHabit(dateStr)}
-              >
-                <div className="text-center">
-                  <div className="text-sm font-medium mb-2">{date.getDate()}</div>
-                  {isCompleted ? (
-                    <CheckCircle className="w-6 h-6 text-green-600 mx-auto" />
-                  ) : (
-                    <Circle className={`w-6 h-6 mx-auto ${isFuture ? 'text-gray-300' : 'text-gray-400'}`} />
-                  )}
-                </div>
-              </Card>
-            );
-          })}
+          </div>
         </div>
       </div>
     );
