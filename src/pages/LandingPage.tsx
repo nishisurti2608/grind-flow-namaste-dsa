@@ -18,7 +18,7 @@ export default function LandingPage() {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                             <img
-                                src="/lovable-uploads/bfdabed2-e05a-4763-a368-dacd61ff3332.png"
+                                src="/brand-logo.png"
                                 alt="Grind Flow Logo"
                                 className="w-10 h-10 object-contain"
                             />
@@ -265,7 +265,7 @@ export default function LandingPage() {
                 <div className="max-w-7xl mx-auto">
                     <div className="flex items-center justify-center space-x-3 mb-8">
                         <img
-                            src="/lovable-uploads/bfdabed2-e05a-4763-a368-dacd61ff3332.png"
+                            src="/brand-logo.png"
                             alt="Grind Flow Logo"
                             className="w-10 h-10 object-contain"
                         />
