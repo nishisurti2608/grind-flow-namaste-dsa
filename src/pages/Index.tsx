@@ -1,7 +1,10 @@
 import { useAuth } from "@/contexts/AuthContext";
-import Dashboard from "@/components/Dashboard";
-import LandingPage from "./LandingPage";
+import { lazy } from "react";
 import CustomLoading from "@/components/customUi/loadingSpinner/CustomLoading";
+
+
+const Dashboard = lazy(()=>import("@/components/Dashboard"))
+const LandingPage = lazy(()=> import("./LandingPage"))
 
 const Index = () => {
   const { user, loading } = useAuth();
